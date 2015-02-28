@@ -1,0 +1,12 @@
+Dependencies for Project 'Timer3A', Target 'Timer3A': (DO NOT MODIFY !)
+F (.\startup.s)(0x506A43C0)(--cpu Cortex-M4.fp --pd "__EVAL SETA 1" -g --apcs=interwork --pd "__MICROLIB SETA 1"-I C:\Keil\ARM\RV31\INC-I C:\Keil\ARM\CMSIS\Include-I C:\Keil\ARM\Inc\Luminary--list .\startup.lst --xref -o .\startup.o --depend .\startup.d)
+F (.\PLL.c)(0x5230F174)(-c --cpu Cortex-M4.fp -D__EVAL -D__MICROLIB -g -O0 --apcs=interwork --split_sections --signed_chars -I.. -I..\..\..-I C:\Keil\ARM\RV31\INC-I C:\Keil\ARM\CMSIS\Include-I C:\Keil\ARM\Inc\Luminary-Drvmdk -DPART_LM4F120H5QR-o .\pll.o --omf_browse .\pll.crf --depend .\pll.d)
+I (PLL.h)(0x5230F174)
+F (.\main.c)(0x54F0E715)(-c --cpu Cortex-M4.fp -D__EVAL -D__MICROLIB -g -O0 --apcs=interwork --split_sections --signed_chars -I.. -I..\..\..-I C:\Keil\ARM\RV31\INC-I C:\Keil\ARM\CMSIS\Include-I C:\Keil\ARM\Inc\Luminary-Drvmdk -DPART_LM4F120H5QR-o .\main.o --omf_browse .\main.crf --depend .\main.d)
+I (PLL.h)(0x5230F174)
+I (Timer3.h)(0x532B4874)
+I (tm4c123gh6pm.h)(0x54EE67B1)
+I (C:\Keil\ARM\ARMCC\include\stdint.h)(0x51C87C24)
+F (.\Timer3.c)(0x54F0E6C8)(-c --cpu Cortex-M4.fp -D__EVAL -D__MICROLIB -g -O0 --apcs=interwork --split_sections --signed_chars -I.. -I..\..\..-I C:\Keil\ARM\RV31\INC-I C:\Keil\ARM\CMSIS\Include-I C:\Keil\ARM\Inc\Luminary-Drvmdk -DPART_LM4F120H5QR-o .\timer3.o --omf_browse .\timer3.crf --depend .\timer3.d)
+I (tm4c123gh6pm.h)(0x54EE67B1)
+I (C:\Keil\ARM\ARMCC\include\stdint.h)(0x51C87C24)

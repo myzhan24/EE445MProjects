@@ -376,7 +376,7 @@ void Thread3(void){
   }
 }
 
-int testmain1(void){  // Testmain1
+int testmain(void){  // Testmain1
   OS_Init();          // initialize, disable interrupts
   PortE_Init();       // profile user threads
   NumCreated = 0 ;
@@ -488,7 +488,7 @@ void BackgroundThread5c(void){   // called when Select button pushed
   NumCreated += OS_AddThread(&Thread4c,128,3); 
 }
       
-int Testmain3(void){   // Testmain3
+int testmain3(void){   // Testmain3
   Count4 = 0;          
   OS_Init();           // initialize, disable interrupts
 // Count2 + Count5 should equal Count1

@@ -307,15 +307,6 @@ Section Cross References
     lab2.o(i.TaskA) refers to lab2.o(.data) for CountA
     lab2.o(i.TaskB) refers to lab2.o(i.PseudoWork) for PseudoWork
     lab2.o(i.TaskB) refers to lab2.o(.data) for CountB
-    lab2.o(i.Testmain3) refers to os.o(i.OS_Init) for OS_Init
-    lab2.o(i.Testmain3) refers to os.o(i.OS_AddSW1Task) for OS_AddSW1Task
-    lab2.o(i.Testmain3) refers to os.o(i.OS_AddThread) for OS_AddThread
-    lab2.o(i.Testmain3) refers to osasm.o(.text) for OS_Launch
-    lab2.o(i.Testmain3) refers to lab2.o(.data) for Count4
-    lab2.o(i.Testmain3) refers to lab2.o(i.BackgroundThread5c) for BackgroundThread5c
-    lab2.o(i.Testmain3) refers to lab2.o(i.Thread2c) for Thread2c
-    lab2.o(i.Testmain3) refers to lab2.o(i.Thread3c) for Thread3c
-    lab2.o(i.Testmain3) refers to lab2.o(i.Thread4c) for Thread4c
     lab2.o(i.Testmain4) refers to os.o(i.OS_Init) for OS_Init
     lab2.o(i.Testmain4) refers to os.o(i.OS_AddPeriodicThread) for OS_AddPeriodicThread
     lab2.o(i.Testmain4) refers to os.o(i.OS_AddSW1Task) for OS_AddSW1Task
@@ -423,14 +414,23 @@ Section Cross References
     lab2.o(i.main) refers to lab2.o(i.Thread1b) for Thread1b
     lab2.o(i.main) refers to lab2.o(i.Thread2b) for Thread2b
     lab2.o(i.main) refers to lab2.o(i.Thread3b) for Thread3b
-    lab2.o(i.testmain1) refers to os.o(i.OS_Init) for OS_Init
-    lab2.o(i.testmain1) refers to lab2.o(i.PortE_Init) for PortE_Init
-    lab2.o(i.testmain1) refers to os.o(i.OS_AddThread) for OS_AddThread
-    lab2.o(i.testmain1) refers to osasm.o(.text) for OS_Launch
-    lab2.o(i.testmain1) refers to lab2.o(.data) for NumCreated
-    lab2.o(i.testmain1) refers to lab2.o(i.Thread1) for Thread1
-    lab2.o(i.testmain1) refers to lab2.o(i.Thread2) for Thread2
-    lab2.o(i.testmain1) refers to lab2.o(i.Thread3) for Thread3
+    lab2.o(i.testmain) refers to os.o(i.OS_Init) for OS_Init
+    lab2.o(i.testmain) refers to lab2.o(i.PortE_Init) for PortE_Init
+    lab2.o(i.testmain) refers to os.o(i.OS_AddThread) for OS_AddThread
+    lab2.o(i.testmain) refers to osasm.o(.text) for OS_Launch
+    lab2.o(i.testmain) refers to lab2.o(.data) for NumCreated
+    lab2.o(i.testmain) refers to lab2.o(i.Thread1) for Thread1
+    lab2.o(i.testmain) refers to lab2.o(i.Thread2) for Thread2
+    lab2.o(i.testmain) refers to lab2.o(i.Thread3) for Thread3
+    lab2.o(i.testmain3) refers to os.o(i.OS_Init) for OS_Init
+    lab2.o(i.testmain3) refers to os.o(i.OS_AddSW1Task) for OS_AddSW1Task
+    lab2.o(i.testmain3) refers to os.o(i.OS_AddThread) for OS_AddThread
+    lab2.o(i.testmain3) refers to osasm.o(.text) for OS_Launch
+    lab2.o(i.testmain3) refers to lab2.o(.data) for Count4
+    lab2.o(i.testmain3) refers to lab2.o(i.BackgroundThread5c) for BackgroundThread5c
+    lab2.o(i.testmain3) refers to lab2.o(i.Thread2c) for Thread2c
+    lab2.o(i.testmain3) refers to lab2.o(i.Thread3c) for Thread3c
+    lab2.o(i.testmain3) refers to lab2.o(i.Thread4c) for Thread4c
     pid_stm32.o(.text) refers to lab2.o(.data) for IntTerm
     __main.o(!!!main) refers to rtentry.o(.ARM.Collect$$rtentry$$00000000) for __rt_entry
     rtentry.o(.ARM.Collect$$rtentry$$00000000) refers (Special) to rtentry2.o(.ARM.Collect$$rtentry$$0000000A) for __rt_entry_li
@@ -663,7 +663,6 @@ Removing Unused input sections from the image.
     Removing lab2.o(i.Signal3), (48 bytes).
     Removing lab2.o(i.TaskA), (44 bytes).
     Removing lab2.o(i.TaskB), (44 bytes).
-    Removing lab2.o(i.Testmain3), (124 bytes).
     Removing lab2.o(i.Testmain4), (140 bytes).
     Removing lab2.o(i.Testmain5), (116 bytes).
     Removing lab2.o(i.Testmain6), (284 bytes).
@@ -686,7 +685,8 @@ Removing Unused input sections from the image.
     Removing lab2.o(i.Wait3), (28 bytes).
     Removing lab2.o(i.add), (20 bytes).
     Removing lab2.o(i.finalmain), (176 bytes).
-    Removing lab2.o(i.testmain1), (108 bytes).
+    Removing lab2.o(i.testmain), (108 bytes).
+    Removing lab2.o(i.testmain3), (124 bytes).
     Removing lab2.o(.bss), (816 bytes).
     Removing lab2.o(.constdata), (4 bytes).
     Removing pid_stm32.o(.text), (72 bytes).
@@ -1240,9 +1240,9 @@ Memory Map of the image
     0x00000698   0x0000003c   Code   RO          316    i.RxFifo_Put        uart.o
     0x000006d4   0x00000018   Code   RO          317    i.RxFifo_Size       uart.o
     0x000006ec   0x00000048   Code   RO          301    i.SysTick_Init      systickints.o
-    0x00000734   0x00000028   Code   RO          875    i.Thread1b          lab2.o
-    0x0000075c   0x00000028   Code   RO          877    i.Thread2b          lab2.o
-    0x00000784   0x00000028   Code   RO          881    i.Thread3b          lab2.o
+    0x00000734   0x00000028   Code   RO          874    i.Thread1b          lab2.o
+    0x0000075c   0x00000028   Code   RO          876    i.Thread2b          lab2.o
+    0x00000784   0x00000028   Code   RO          880    i.Thread3b          lab2.o
     0x000007ac   0x0000003c   Code   RO          318    i.TxFifo_Get        uart.o
     0x000007e8   0x00000018   Code   RO          321    i.TxFifo_Size       uart.o
     0x00000800   0x00000058   Code   RO          322    i.UART0_Handler     uart.o
@@ -1253,7 +1253,7 @@ Memory Map of the image
     0x00000894   0x00000028   Code   RO          332    i.copyHardwareToSoftware  uart.o
     0x000008bc   0x0000002c   Code   RO          333    i.copySoftwareToHardware  uart.o
     0x000008e8   0x0000001c   Code   RO          468    i.inHeapRange       heap.o
-    0x00000904   0x0000006c   Code   RO          895    i.main              lab2.o
+    0x00000904   0x0000006c   Code   RO          894    i.main              lab2.o
     0x00000970   0x00000030   Code   RO          470    i.markBlockUsed     heap.o
     0x000009a0   0x0000000e   Code   RO          472    i.nextBlockHeader   heap.o
     0x000009ae   0x0000004c   Code   RO          474    i.splitAndMarkBlockUsed  heap.o
@@ -1290,19 +1290,19 @@ Image component sizes
 
       Code (inc. data)   RO Data    RW Data    ZI Data      Debug   Object Name
 
-        28         12          0         12          0       1731   adc.o
-       334         16          0          0       1024       5010   heap.o
-         0          0          0          0          0        308   interpreter.o
-       344         74          0        124          0       5465   lab2.o
-       204         26          0         28          0       2484   os.o
-       144         18          0          0          0        216   osasm.o
-       124          6          0          0          0       4583   pll.o
-       692        632          0          0       1024        884   startup.o
-        72          6          0          0          0        507   systickints.o
-       340         62          0         16         32       3968   uart.o
+        28         12          0         12          0       1763   adc.o
+       334         16          0          0       1024       5130   heap.o
+         0          0          0          0          0        320   interpreter.o
+       344         74          0        124          0       5585   lab2.o
+       204         26          0         28          0       2536   os.o
+       144         18          0          0          0        228   osasm.o
+       124          6          0          0          0       4591   pll.o
+       692        632          0          0       1024        900   startup.o
+        72          6          0          0          0        519   systickints.o
+       340         62          0         16         32       4060   uart.o
 
     ----------------------------------------------------------------------
-      2284        852         32        180       2080      25156   Object Totals
+      2284        852         32        180       2080      25632   Object Totals
          0          0         32          0          0          0   (incl. Generated)
          2          0          0          0          0          0   (incl. Padding)
 
@@ -1351,8 +1351,8 @@ Image component sizes
 
       Code (inc. data)   RO Data    RW Data    ZI Data      Debug   
 
-      2556        868         32        180       2180      24172   Grand Totals
-      2556        868         32        180       2180      24172   ELF Image Totals
+      2556        868         32        180       2180      24648   Grand Totals
+      2556        868         32        180       2180      24648   ELF Image Totals
       2556        868         32        180          0          0   ROM Totals
 
 ==============================================================================

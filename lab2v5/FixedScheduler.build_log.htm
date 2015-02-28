@@ -1,0 +1,106 @@
+<html>
+<body>
+<pre>
+<h1>µVision Build Log</h1>
+<h2>Project:</h2>
+C:\Users\Matt\Documents\EE445M\EE445MProjects\lab2v5\FixedScheduler.uvproj
+Project File Date:  02/26/2015
+
+<h2>Output:</h2>
+Build target 'FixedScheduler'
+compiling lab2.c...
+linking...
+Program Size: Code=9708 RO-data=2052 RW-data=292 ZI-data=8436  
+".\FixedScheduler.axf" - 0 Error(s), 0 Warning(s).
+</pre>
+</body>
+</html>
+.c...
+compiling Timer5A.c...
+linking...
+.\FixedScheduler.axf: Error: L6218E: Undefined symbol main (referred from rtentry2.o).
+Not enough information to list image symbols.
+Finished: 1 information, 0 warning and 1 error messages.
+".\FixedScheduler.axf" - 1 Error(s), 1 Warning(s).
+Target not created
+(82): warning:  #550-D: variable "delay" was set but never used
+        int delay;
+Switch.c: 1 warning, 0 errors
+linking...
+Program Size: Code=4452 RO-data=32 RW-data=248 ZI-data=7208  
+".\FixedScheduler.axf" - 0 Error(s), 2 Warning(s).
+ng, 0 errors
+linking...
+Program Size: Code=4452 RO-data=32 RW-data=248 ZI-data=7208  
+".\FixedScheduler.axf" - 0 Error(s), 3 Warning(s).
+\FixedScheduler.axf: Error: L6200E: Symbol periodicInterruptCount multiply defined (by uart.o and interpreter.o).
+.\FixedScheduler.axf: Error: L6200E: Symbol periodicInterruptCount multiply defined (by lab2.o and interpreter.o).
+.\FixedScheduler.axf: Error: L6200E: Symbol periodicInterruptCount multiply defined (by timer3a.o and interpreter.o).
+Not enough information to list image symbols.
+Not enough information to list the image map.
+Finished: 2 information, 0 warning and 4 error messages.
+".\FixedScheduler.axf" - 4 Error(s), 3 Warning(s).
+Target not created
+e *PeriodicNode;                               // periodic task
+os.c(62): error:  #20: identifier "TCBType" is undefined
+  TCBType *PeriodicTCB;
+os.c(85): error:  #20: identifier "periodicInterruptCount" is undefined
+                periodicInterruptCount = 0;
+os.c(97): warning:  #223-D: function "OS_Fifo_Init" declared implicitly
+                OS_Fifo_Init(FIFOSIZE);
+os.c(115): error:  #20: identifier "TCBType" is undefined
+        TCBType *newTCB;
+os.c(115): error:  #20: identifier "newTCB" is undefined
+        TCBType *newTCB;
+os.c(116): error:  #20: identifier "NodeType" is undefined
+        NodeType *newNode;
+os.c(116): error:  #20: identifier "newNode" is undefined
+        NodeType *newNode;
+os.c(122): error:  #29: expected an expression
+                newTCB = (TCBType*) Heap_Malloc(sizeof(TCBType));
+os.c(122): error:  #65: expected a ";"
+                newTCB = (TCBType*) Heap_Malloc(sizeof(TCBType));
+os.c(128): error:  #29: expected an expression
+                newNode = (NodeType*) Heap_Malloc(sizeof(NodeType));
+os.c(128): error:  #65: expected a ";"
+                newNode = (NodeType*) Heap_Malloc(sizeof(NodeType));
+os.c(137): error:  #132: expression must have pointer-to-struct-or-union type
+                RunPt = NodePt->ThreadPt;
+os.c(141): error:  #132: expression must have pointer-to-struct-or-union type
+                        while(tail->Next != head)
+os.c(142): error:  #132: expression must have pointer-to-struct-or-union type
+                                tail=tail->Next;
+os.c(145): error:  #29: expected an expression
+                newTCB = (TCBType*) Heap_Malloc(sizeof(TCBType));
+os.c(145): error:  #65: expected a ";"
+                newTCB = (TCBType*) Heap_Malloc(sizeof(TCBType));
+os.c(149): error:  #29: expected an expression
+                newNode = (NodeType*) Heap_Malloc(sizeof(NodeType));
+os.c(149): error:  #65: expected a ";"
+                newNode = (NodeType*) Heap_Malloc(sizeof(NodeType));
+os.c(155): error:  #132: expression must have pointer-to-struct-or-union type
+                head->Prev = newNode;                                                   //head points prev to the new last
+os.c(156): error:  #132: expression must have pointer-to-struct-or-union type
+                tail->Next = newNode;                                                   //update old last in the list's next
+os.c(196): error:  #20: identifier "periodicInterruptCount" is undefined
+      periodicInterruptCount = 0;
+os.c(200): error:  #20: identifier "periodicInterruptCount" is undefined
+      return periodicInterruptCount;
+os.c: 1 warning, 30 errors
+compiling SysTickInts.c...
+compiling UART.c...
+compiling heap.c...
+compiling ST7735.c...
+compiling lab2.c...
+lab2.c(451): warning:  #520-D: initialization with "{...}" expected for aggregate object
+  int dump[100] = 0;
+lab2.c: 1 warning, 0 errors
+assembling PID_stm32.s...
+assembling cr4_fft_64_stm32.s...
+compiling Timer3A.c...
+compiling Switch.c...
+Switch.c(82): warning:  #550-D: variable "delay" was set but never used
+        int delay;
+Switch.c: 1 warning, 0 errors
+".\FixedScheduler.axf" - 30 Error(s), 4 Warning(s).
+Target not created
