@@ -1,0 +1,605 @@
+
+
+
+ARM Macro Assembler    Page 1 
+
+
+    1 00000000         ;/******************************************************
+                       ***********************/
+    2 00000000         ;/* OSasm.s: low-level OS commands, written in assembly 
+                                             */
+    3 00000000         ;/* derived from uCOS-II                                
+                                             */
+    4 00000000         ;/******************************************************
+                       ***********************/
+    5 00000000         ;Jonathan Valvano, Fixed Scheduler, 8/10/14
+    6 00000000         
+    7 00000000         
+    8 00000000                 AREA             |.text|, CODE, READONLY, ALIGN=
+2
+    9 00000000                 THUMB
+   10 00000000                 REQUIRE8
+   11 00000000                 PRESERVE8
+   12 00000000         
+   13 00000000                 EXTERN           RunPt       ; currently running
+                                                             thread
+   14 00000000                 EXTERN           NodePt      ; linked list of tr
+                                                            eads to run
+   15 00000000                 EXTERN           OS_SleepCheck ;
+   16 00000000                 EXTERN           OS_SleepClear
+   17 00000000                 EXTERN           TempTCBPt
+   18 00000000         ;EXTERN killSwitch  ; PendSV skip saving the conteext?
+   19 00000000         ;EXTERN  SNodePt
+   20 00000000         ;EXTERN PeriodicNode
+   21 00000000         ;EXTERN  sys
+   22 00000000                 EXPORT           OS_Launch
+   23 00000000                 EXPORT           SysTick_Handler
+   24 00000000                 EXPORT           PendSV_Handler
+   25 00000000         ;EXPORT  Timer0A_Handler
+   26 00000000         
+   27 00000000 40030024 
+                       TIMER0_ICR_R
+                               EQU              0x40030024
+   28 00000000 00000001 
+                       TIMER_ICR_TATOCINT
+                               EQU              0x00000001  ; GPTM TimerA Time-
+                                                            Out Raw
+   29 00000000 E000ED04 
+                       NVIC_INT_CTRL
+                               EQU              0xE000ED04  ; Interrupt control
+                                                             state register.
+   30 00000000 E000ED22 
+                       NVIC_SYSPRI14
+                               EQU              0xE000ED22  ; PendSV priority r
+                                                            egister (position 1
+                                                            4).
+   31 00000000 E000ED23 
+                       NVIC_SYSPRI15
+                               EQU              0xE000ED23  ; Systick priority 
+                                                            register (position 
+                                                            15).
+   32 00000000 000000EF 
+                       NVIC_LEVEL14
+                               EQU              0xEF        ; Systick priority 
+                                                            value (second lowes
+                                                            t).
+
+
+
+ARM Macro Assembler    Page 2 
+
+
+   33 00000000 000000FF 
+                       NVIC_LEVEL15
+                               EQU              0xFF        ; PendSV priority v
+                                                            alue (lowest).
+   34 00000000 10000000 
+                       NVIC_PENDSVSET
+                               EQU              0x10000000  ; Value to trigger 
+                                                            PendSV exception.
+   35 00000000 E000E014 
+                       NVIC_ST_RELOAD
+                               EQU              0xE000E014
+   36 00000000 E000E018 
+                       NVIC_ST_CURRENT
+                               EQU              0xE000E018
+   37 00000000         
+   38 00000000         
+   39 00000000 4770            BX               LR          ; yes – we successf
+                                                            ully incremented it
+                                                            
+   40 00000002         
+   41 00000002         
+   42 00000002         OS_Launch
+   43 00000002 4839            LDR              R0, =RunPt  ; currently running
+                                                             thread
+   44 00000004 6802            LDR              R2, [R0]    ; R2 = value of Run
+                                                            Pt
+   45 00000006 F8D2 D000       LDR              SP, [R2]    ; new thread SP; SP
+                                                             = RunPt->stackPoin
+                                                            ter;
+   46 0000000A E8BD 0FF0       POP              {R4-R11}    ; restore regs r4-1
+                                                            1 
+   47 0000000E BC0F            POP              {R0-R3}     ; restore regs r0-3
+                                                             
+   48 00000010 F85D CB04       POP              {R12}
+   49 00000014 F85D EB04       POP              {LR}        ; discard LR from i
+                                                            nitial stack
+   50 00000018 F85D EB04       POP              {LR}        ; start location
+   51 0000001C BC02            POP              {R1}        ; discard PSR
+   52 0000001E B662            CPSIE            I           ; Enable interrupts
+                                                             at processor level
+                                                            
+   53 00000020 4770            BX               LR          ; start first threa
+                                                            d
+   54 00000022         
+   55 00000022         OSStartHang
+   56 00000022 E7FE            B                OSStartHang ; Should never get 
+                                                            here
+   57 00000024         
+   58 00000024         
+   59 00000024         
+   60 00000024         ;*******************************************************
+                       *************************************************
+   61 00000024         
+   62 00000024         
+   63 00000024         SysTick_Handler
+   64 00000024 B672            CPSID            I           ; Prevent interrupt
+                                                            ion during context 
+                                                            switch
+   65 00000026         
+
+
+
+ARM Macro Assembler    Page 3 
+
+
+   66 00000026         ;check if this context needs to be saved at all
+   67 00000026 4830            LDR              R0, =RunPt
+   68 00000028 6800            LDR              R0, [R0]    ; RunPt Val
+   69 0000002A 6841            LDR              R1, [R0,#4] ; RunPt->tempSP
+   70 0000002C 3100            ADDS             R1,#0       ;set cc
+   71 0000002E D004            BEQ              SysTick_SaveContext ; if it's z
+                                                            ero then continue n
+                                                            ormally
+   72 00000030 482E            LDR              R0, =TempTCBPt 
+                                                            ;temptcbpt address
+   73 00000032 6801            LDR              R1,[R0]     ;TempTCBPt val
+   74 00000034 F8D1 D000       LDR              SP,[R1]     ;SP = TempTCBPt->SP
+                                                            
+   75 00000038 E005            B                SleepCheck  ;other wise 1 means
+                                                             to skip pushing on
+                                                            to the stack
+   76 0000003A         
+   77 0000003A         
+   78 0000003A         
+   79 0000003A         SysTick_SaveContext
+   80 0000003A         
+   81 0000003A E92D 0FF0       PUSH             {R4-R11}    ; Save remaining re
+                                                            gs r4-11
+   82 0000003E 482A            LDR              R0, =RunPt  ; R0=pointer to Run
+                                                            Pt, old thread
+   83 00000040 6801            LDR              R1, [R0]    ; RunPt->stackPoint
+                                                            er = SP;
+   84 00000042 F8C1 D000       STR              SP, [R1]    ; save SP of proces
+                                                            s being switched ou
+                                                            t
+   85 00000046         
+   86 00000046         ;context saved
+   87 00000046         ;check the sleep
+   88 00000046         
+   89 00000046         SleepCheck
+   90 00000046 4828            LDR              R0, =RunPt  ; R0=pointer to Run
+                                                            Pt, old thread
+   91 00000048 4929            LDR              R1, =NodePt
+   92 0000004A 680A            LDR              R2, [R1]    ; NodePt
+   93 0000004C 6812            LDR              R2, [R2]    ; next to run
+   94 0000004E         
+   95 0000004E 600A            STR              R2, [R1]    ; NodePt= NodePt->N
+                                                            ext;
+   96 00000050 6853            LDR              R3, [R2,#4] ; R3= NodePt->Next-
+                                                            >Thread;// which th
+                                                            read
+   97 00000052 6003            STR              R3, [R0]    ; RunPt = NodePt->N
+                                                            ext->ThreadPt
+   98 00000054         
+   99 00000054 B500            PUSH{LR}
+  100 00000056 F7FF FFFE       BL               OS_SleepCheck
+  101 0000005A F85D EB04       POP{LR}
+  102 0000005E 3000            ADDS             R0,#0       ; -1 still sleeping
+                                                            
+  103 00000060         
+  104 00000060 D4F1            BMI              SleepCheck  ;  Negative still s
+                                                            leeping
+  105 00000062 D004            BEQ              SkipSleepClear ;  0: OS Sleep w
+                                                            as 0, skip updating
+
+
+
+ARM Macro Assembler    Page 4 
+
+
+                                                             the sleep
+  106 00000064 B500            PUSH{LR}
+  107 00000066 F7FF FFFE       BL               OS_SleepClear
+  108 0000006A F85D EB04       POP{LR}
+  109 0000006E         
+  110 0000006E         SkipSleepClear
+  111 0000006E         ; reload SYStiCK Reload time
+  112 0000006E 680A            LDR              R2, [R1]    ;
+  113 00000070 6892            LDR              R2, [R2,#8] ; NodePt->TimeSlice
+                                                            
+  114 00000072 F1A2 0232       SUB              R2, #50     ; subtract off time
+                                                             to run this ISR
+  115 00000076 491F            LDR              R1, =NVIC_ST_RELOAD
+  116 00000078         ; STR     R2, [R1]           ; how long to run next thre
+                       ad
+  117 00000078 491F            LDR              R1, =NVIC_ST_CURRENT
+  118 0000007A 600A            STR              R2, [R1]    ; write to current,
+                                                             clears it
+  119 0000007C         
+  120 0000007C 491A            LDR              R1, =RunPt
+  121 0000007E 680B            LDR              R3, [R1]    ; R3 = RunPt Val
+  122 00000080         ;LDR     R3, [R2]        ;  R3 = RunPt->StackPt
+  123 00000080 F8D3 D000       LDR              SP, [R3]    ; new thread SP; SP
+                                                             = RunPt->stackPoin
+                                                            ter;
+  124 00000084         
+  125 00000084         
+  126 00000084 E8BD 0FF0       POP              {R4-R11}    ; restore regs r4-1
+                                                            1 
+  127 00000088         
+  128 00000088 B662            CPSIE            I           ; tasks run with I=
+                                                            0
+  129 0000008A 4770            BX               LR          ; Exception return 
+                                                            will restore remain
+                                                            ing context   
+  130 0000008C         
+  131 0000008C         
+  132 0000008C         
+  133 0000008C         
+  134 0000008C         
+  135 0000008C         PendSV_Handler
+  136 0000008C B672            CPSID            I           ; Prevent interrupt
+                                                            ion during context 
+                                                            switch
+  137 0000008E         ;check if this context needs to be saved at all
+  138 0000008E 4816            LDR              R0, =RunPt
+  139 00000090 6800            LDR              R0, [R0]    ; RunPt Val
+  140 00000092 6841            LDR              R1, [R0,#4] ; RunPt->tempSP
+  141 00000094 3100            ADDS             R1,#0       ;set cc
+  142 00000096 D004            BEQ              PendSV_SaveContext ; if it's ze
+                                                            ro then continue no
+                                                            rmally
+  143 00000098 4814            LDR              R0, =TempTCBPt 
+                                                            ;temptcbpt address
+  144 0000009A 6801            LDR              R1,[R0]     ;TempTCBPt val
+  145 0000009C F8D1 D000       LDR              SP,[R1]     ;SP = TempTCBPt->SP
+                                                            
+  146 000000A0 E005            B                SleepCheckX ;other wise 1 means
+                                                             to skip pushing on
+
+
+
+ARM Macro Assembler    Page 5 
+
+
+                                                            to the stack
+  147 000000A2         
+  148 000000A2         
+  149 000000A2         
+  150 000000A2         PendSV_SaveContext
+  151 000000A2 E92D 0FF0       PUSH             {R4-R11}    ; Save remaining re
+                                                            gs r4-11
+  152 000000A6 4810            LDR              R0, =RunPt  ; R0=pointer to Run
+                                                            Pt, old thread
+  153 000000A8 6801            LDR              R1, [R0]    ; RunPt->stackPoint
+                                                            er = SP;
+  154 000000AA F8C1 D000       STR              SP, [R1]    ; save SP of proces
+                                                            s being switched ou
+                                                            t
+  155 000000AE         
+  156 000000AE         ;context saved
+  157 000000AE         ;check the sleep
+  158 000000AE         
+  159 000000AE         SleepCheckX
+  160 000000AE 480E            LDR              R0, =RunPt  ; R0=pointer to Run
+                                                            Pt, old thread
+  161 000000B0 490F            LDR              R1, =NodePt
+  162 000000B2 680A            LDR              R2, [R1]    ; NodePt
+  163 000000B4 6812            LDR              R2, [R2]    ; next to run
+  164 000000B6         
+  165 000000B6 600A            STR              R2, [R1]    ; NodePt= NodePt->N
+                                                            ext;
+  166 000000B8 6853            LDR              R3, [R2,#4] ; RunPt = &sys[Node
+                                                            Pt->Thread];// whic
+                                                            h thread
+  167 000000BA 6003            STR              R3, [R0]
+  168 000000BC         
+  169 000000BC B500            PUSH{LR}
+  170 000000BE F7FF FFFE       BL               OS_SleepCheck
+  171 000000C2 F85D EB04       POP{LR}
+  172 000000C6 3000            ADDS             R0,#0       ; -1 still sleeping
+                                                            
+  173 000000C8         
+  174 000000C8 D4F1            BMI              SleepCheckX ;  Negative still s
+                                                            leeping
+  175 000000CA D004            BEQ              SkipSleepClearX ;  0: OS Sleep 
+                                                            was 0, skip updatin
+                                                            g the sleep
+  176 000000CC B500            PUSH{LR}
+  177 000000CE F7FF FFFE       BL               OS_SleepClear
+  178 000000D2 F85D EB04       POP{LR}
+  179 000000D6         
+  180 000000D6         SkipSleepClearX
+  181 000000D6         
+  182 000000D6         
+  183 000000D6 4904            LDR              R1, =RunPt
+  184 000000D8 680B            LDR              R3, [R1]    ; R2 = RunPt
+  185 000000DA         ;LDR     R3, [R2]        ;  R3 = RunPt->StackPt
+  186 000000DA F8D3 D000       LDR              SP, [R3]    ; new thread SP; SP
+                                                             = RunPt->stackPoin
+                                                            ter;
+  187 000000DE         
+  188 000000DE         
+  189 000000DE E8BD 0FF0       POP              {R4-R11}    ; restore regs r4-1
+
+
+
+ARM Macro Assembler    Page 6 
+
+
+                                                            1 
+  190 000000E2         
+  191 000000E2 B662            CPSIE            I           ; tasks run with I=
+                                                            0
+  192 000000E4 4770            BX               LR          ; Exception return 
+                                                            will restore remain
+                                                            ing context   
+  193 000000E6         
+  194 000000E6 00 00           ALIGN
+  195 000000E8                 END
+              00000000 
+              00000000 
+              00000000 
+              E000E014 
+              E000E018 
+Command Line: --debug --xref --cpu=Cortex-M4 --apcs=interwork --depend=.\osasm.
+d -o.\osasm.o -IC:\Keil\ARM\RV31\INC -IC:\Keil\ARM\CMSIS\Include -IC:\Keil\ARM\
+Inc\Luminary --predefine="__EVAL SETA 1" --list=.\osasm.lst osasm.s
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Relocatable symbols
+
+.text 00000000
+
+Symbol: .text
+   Definitions
+      At line 8 in file osasm.s
+   Uses
+      None
+Comment: .text unused
+OSStartHang 00000022
+
+Symbol: OSStartHang
+   Definitions
+      At line 55 in file osasm.s
+   Uses
+      At line 56 in file osasm.s
+Comment: OSStartHang used once
+OS_Launch 00000002
+
+Symbol: OS_Launch
+   Definitions
+      At line 42 in file osasm.s
+   Uses
+      At line 22 in file osasm.s
+Comment: OS_Launch used once
+PendSV_Handler 0000008C
+
+Symbol: PendSV_Handler
+   Definitions
+      At line 135 in file osasm.s
+   Uses
+      At line 24 in file osasm.s
+Comment: PendSV_Handler used once
+PendSV_SaveContext 000000A2
+
+Symbol: PendSV_SaveContext
+   Definitions
+      At line 150 in file osasm.s
+   Uses
+      At line 142 in file osasm.s
+Comment: PendSV_SaveContext used once
+SkipSleepClear 0000006E
+
+Symbol: SkipSleepClear
+   Definitions
+      At line 110 in file osasm.s
+   Uses
+      At line 105 in file osasm.s
+Comment: SkipSleepClear used once
+SkipSleepClearX 000000D6
+
+Symbol: SkipSleepClearX
+   Definitions
+      At line 180 in file osasm.s
+   Uses
+      At line 175 in file osasm.s
+Comment: SkipSleepClearX used once
+SleepCheck 00000046
+
+Symbol: SleepCheck
+
+
+
+ARM Macro Assembler    Page 2 Alphabetic symbol ordering
+Relocatable symbols
+
+   Definitions
+      At line 89 in file osasm.s
+   Uses
+      At line 75 in file osasm.s
+      At line 104 in file osasm.s
+
+SleepCheckX 000000AE
+
+Symbol: SleepCheckX
+   Definitions
+      At line 159 in file osasm.s
+   Uses
+      At line 146 in file osasm.s
+      At line 174 in file osasm.s
+
+SysTick_Handler 00000024
+
+Symbol: SysTick_Handler
+   Definitions
+      At line 63 in file osasm.s
+   Uses
+      At line 23 in file osasm.s
+Comment: SysTick_Handler used once
+SysTick_SaveContext 0000003A
+
+Symbol: SysTick_SaveContext
+   Definitions
+      At line 79 in file osasm.s
+   Uses
+      At line 71 in file osasm.s
+Comment: SysTick_SaveContext used once
+11 symbols
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Absolute symbols
+
+NVIC_INT_CTRL E000ED04
+
+Symbol: NVIC_INT_CTRL
+   Definitions
+      At line 29 in file osasm.s
+   Uses
+      None
+Comment: NVIC_INT_CTRL unused
+NVIC_LEVEL14 000000EF
+
+Symbol: NVIC_LEVEL14
+   Definitions
+      At line 32 in file osasm.s
+   Uses
+      None
+Comment: NVIC_LEVEL14 unused
+NVIC_LEVEL15 000000FF
+
+Symbol: NVIC_LEVEL15
+   Definitions
+      At line 33 in file osasm.s
+   Uses
+      None
+Comment: NVIC_LEVEL15 unused
+NVIC_PENDSVSET 10000000
+
+Symbol: NVIC_PENDSVSET
+   Definitions
+      At line 34 in file osasm.s
+   Uses
+      None
+Comment: NVIC_PENDSVSET unused
+NVIC_ST_CURRENT E000E018
+
+Symbol: NVIC_ST_CURRENT
+   Definitions
+      At line 36 in file osasm.s
+   Uses
+      At line 117 in file osasm.s
+Comment: NVIC_ST_CURRENT used once
+NVIC_ST_RELOAD E000E014
+
+Symbol: NVIC_ST_RELOAD
+   Definitions
+      At line 35 in file osasm.s
+   Uses
+      At line 115 in file osasm.s
+Comment: NVIC_ST_RELOAD used once
+NVIC_SYSPRI14 E000ED22
+
+Symbol: NVIC_SYSPRI14
+   Definitions
+      At line 30 in file osasm.s
+   Uses
+      None
+Comment: NVIC_SYSPRI14 unused
+NVIC_SYSPRI15 E000ED23
+
+Symbol: NVIC_SYSPRI15
+
+
+
+ARM Macro Assembler    Page 2 Alphabetic symbol ordering
+Absolute symbols
+
+   Definitions
+      At line 31 in file osasm.s
+   Uses
+      None
+Comment: NVIC_SYSPRI15 unused
+TIMER0_ICR_R 40030024
+
+Symbol: TIMER0_ICR_R
+   Definitions
+      At line 27 in file osasm.s
+   Uses
+      None
+Comment: TIMER0_ICR_R unused
+TIMER_ICR_TATOCINT 00000001
+
+Symbol: TIMER_ICR_TATOCINT
+   Definitions
+      At line 28 in file osasm.s
+   Uses
+      None
+Comment: TIMER_ICR_TATOCINT unused
+10 symbols
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+External symbols
+
+NodePt 00000000
+
+Symbol: NodePt
+   Definitions
+      At line 14 in file osasm.s
+   Uses
+      At line 91 in file osasm.s
+      At line 161 in file osasm.s
+
+OS_SleepCheck 00000000
+
+Symbol: OS_SleepCheck
+   Definitions
+      At line 15 in file osasm.s
+   Uses
+      At line 100 in file osasm.s
+      At line 170 in file osasm.s
+
+OS_SleepClear 00000000
+
+Symbol: OS_SleepClear
+   Definitions
+      At line 16 in file osasm.s
+   Uses
+      At line 107 in file osasm.s
+      At line 177 in file osasm.s
+
+RunPt 00000000
+
+Symbol: RunPt
+   Definitions
+      At line 13 in file osasm.s
+   Uses
+      At line 43 in file osasm.s
+      At line 67 in file osasm.s
+      At line 82 in file osasm.s
+      At line 90 in file osasm.s
+      At line 120 in file osasm.s
+      At line 138 in file osasm.s
+      At line 152 in file osasm.s
+      At line 160 in file osasm.s
+      At line 183 in file osasm.s
+
+TempTCBPt 00000000
+
+Symbol: TempTCBPt
+   Definitions
+      At line 17 in file osasm.s
+   Uses
+      At line 72 in file osasm.s
+      At line 143 in file osasm.s
+
+5 symbols
+359 symbols in table

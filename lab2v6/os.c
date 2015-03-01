@@ -57,6 +57,8 @@ NodeType *NodePt;							//current thread node
 //NodeType *SNodePt;						//current SystickThreadNode
 NodeType TempNode;						//copy of the current foreground node
 NodeType *TempNodePt;
+TCBType	 TempTCB;
+TCBType	 *TempTCBPt;
 NodeType *head;								//head of linked list, used for initialization of add threads
 NodeType *tail;								//tail of linked list, used for initialization of add threads
 volatile int numThreads=0;
@@ -91,14 +93,16 @@ void OS_Init(void){
     // code below taken from PeriodicSysTickInts.c
     PLL_Init();                 // bus clock at 80 MHz
 		//intialize systick timer for the thread switching
-		Timer5A_Init(0xffffffff);
-		SysTick_Init(SYSTICKPERIOD,3);//enable for lab2.1 testmain2
+		//Timer5A_Init(0xffffffff);
+		
 		//Timer0A_Init((50000000/16));
 		//ADC_Init();
 		UART_Init();
 		//Board_Init();
 		Heap_Init();
 		OS_Fifo_Init(FIFOSIZE);
+	SysTick_Init(SYSTICKPERIOD,3);//enable for lab2.1 testmain2
+	Timer5A_Init(800000000);
     EnableInterrupts();
 }
 
@@ -307,8 +311,16 @@ void OS_InitSemaphore(Sema4Type *semaPt, long value){
 // kill the currently running thread, release its TCB and stack
 // input:  none
 // output: none
+int d[100];
+int di = 0;
 void OS_Kill(void){
 	int status = StartCritical();
+	if(di<100)
+	{
+		d[di] = Heap_Stats().wordsAvailable;
+		di++;
+	}
+	
 	TCBType *currentTCB;
 	NodeType *currentNode;
 	
@@ -325,12 +337,14 @@ void OS_Kill(void){
 	
 	currentTCB = RunPt;
 	currentNode = NodePt;
-	currentNode->Prev->Next = currentNode->Next; // o -> x -> o 	x is being swapped out
-	currentNode->Next->Prev = currentNode->Prev;				// o <- x <- o 	x is being swapped out
+	currentNode->Prev->Next = NodePt->Next; // o -> x -> o 	x is being swapped out
+	currentNode->Next->Prev = NodePt->Prev;				// o <- x <- o 	x is being swapped out
 	
 	TempNodePt->Next = currentNode->Next;
 	TempNodePt->Prev = currentNode->Prev;
-	TempNodePt->ThreadPt = currentNode->ThreadPt;
+	TempNodePt->ThreadPt = TempTCBPt;
+//	TempNodePt->ThreadPt = currentNode->ThreadPt;
+	TempTCBPt->StackPt = TempTCBPt->InitialReg;
 	
 	RunPt = TempNodePt->ThreadPt;
 	NodePt = TempNodePt;
@@ -442,13 +456,17 @@ void OS_bWait(Sema4Type *semaPt){
 }
 
 int OS_SleepCheck(NodeType *node) {
-	
-	if(!(node->Sleep))
+	int sr = StartCritical();
+	if(!(node->Sleep)){
+		EndCritical(sr);
 		return 0;			//not sleeping
-	
-	if(node->Sleep < OS_Time())		//still sleeping
+		
+	}
+	if(node->Sleep < OS_Time()){		//still sleeping
+		EndCritical(sr);
 		return -1;
-	
+	}
+	EndCritical(sr);
 	return 1;
 }
 
@@ -476,6 +494,9 @@ void OS_Sleep(unsigned long sleepTime){
 	OS_Suspend();
 } 
 
+unsigned int dumpt[100];
+int dumpti = 0;
+
 // ******** OS_Time ************
 // return the system time 
 // Inputs:  none
@@ -484,8 +505,10 @@ void OS_Sleep(unsigned long sleepTime){
 // It is ok to change the resolution and precision of this function as long as 
 //   this function and OS_TimeDifference have the same resolution and precision 
 unsigned long OS_Time(void){
+	int status = StartCritical();
 	RTC += rtCounter*4294.967295 + ((TIMER5_TAILR_R-TIMER5_TAV_R)/1000000);
 	rtCounter=0;
+	EndCritical(status);
 	return RTC;	//SysTick Current Time
 }
 
@@ -505,37 +528,4 @@ unsigned long OS_TimeDifference(unsigned long start, unsigned long stop){
 	return diff;
 }
 
-/*
-void Timer0A_Handler(void){
-	int status = StartCritical();
-  TIMER0_ICR_R = TIMER_ICR_TATOCINT;// acknowledge timer0A timeout
-	//TempSNode = SNodePt;
-	PeriodicNode->Next = SNodePt;
-	TempSNode.ThreadPt = SNodePt->ThreadPt;
-	TempSNode.TimeSlice = SNodePt->TimeSlice;
-	TempSNode.Next = PeriodicNode;
-	NodePt=&TempSNode;
-	EndCritical(status);
-	OS_Suspend();
-  //(*PeriodicTask)();                // execute user task
-}
-*/
-/*
-void Timer0A_Handler(void){
-	TIMER0_ICR_R = TIMER_ICR_TATOCINT;// acknowledge timer0A timeout
-	//OS_Suspend();
-}
-*/
-
-/*
-void OS_TempSNode(){
-	int status = StartCritical();
-	//TempSNode = SNodePt;
-	PeriodicNode->Next = SNodePt;
-	TempSNode.ThreadPt = SNodePt->ThreadPt;
-	TempSNode.TimeSlice = SNodePt->TimeSlice;
-	TempSNode.Next = PeriodicNode;
-	NodePt=&TempSNode;
-	EndCritical(status);
-}*/
 

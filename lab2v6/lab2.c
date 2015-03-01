@@ -553,9 +553,11 @@ void Thread3d(void){
     Count3++;
   }
 }
+
 void Thread4d(void){ int i;
 	PF2 ^= 0x04;
-  for(i=0;i<1;i++){
+
+  for(i=0;i<3;i++){
     Count4++;
     OS_Sleep(1);
   }
