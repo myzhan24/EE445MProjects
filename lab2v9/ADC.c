@@ -69,6 +69,7 @@ void EnableInterrupts(void);  // Enable interrupts
 long StartCritical (void);    // previous I bit, disable interrupts
 void EndCritical(long sr);    // restore I bit to previous value
 void WaitForInterrupt(void);  // low power mode
+void Producer(unsigned long data);
 
 // There are many choices to make when using the ADC, and many
 // different combinations of settings will all do basically the
@@ -109,14 +110,18 @@ void WaitForInterrupt(void);  // low power mode
 volatile int samples;
 volatile int totalSamples;
 
+volatile int collectDone;
 
 
 void ADC_InitT0(uint8_t channelNum,uint32_t period) {
+	  int status = StartCritical();
 	volatile uint32_t delay;
 	if(period < 8000000)
 		period = 8000000; //if the period is outside the bounds, the default is the lowest frequency
 	if(period > 80000000)
 		period = 80000000;
+	
+	collectDone = 0;
 	
   // **** GPIO pin initialization ****
              // 1) activate clock
@@ -167,7 +172,7 @@ void ADC_InitT0(uint8_t channelNum,uint32_t period) {
    
   
 	
-  int status = StartCritical();
+
 	SYSCTL_RCGCADC_R |= 0x01;     // activate ADC0 
 	SYSCTL_RCGCTIMER_R |= 0x01;   // activate timer0 
 	delay = SYSCTL_RCGCTIMER_R;   // allow time to finish activating
@@ -188,15 +193,17 @@ void ADC_InitT0(uint8_t channelNum,uint32_t period) {
 	ADC0_IM_R |= 0x08;             // enable SS3 interrupts
 	ADC0_ACTSS_R |= 0x08;          // enable sample sequencer 3
 	NVIC_PRI4_R = (NVIC_PRI4_R&0xFFFF00FF)|0x00004000; //priority 2
-	NVIC_EN0_R = 1<<17;              // enable interrupt 17 in NVIC
+//	NVIC_PRI4_R = (NVIC_PRI4_R&0xFFFF00FF)|0x0000E000; //priority 7
+	NVIC_EN0_R |= 1<<17;              // enable interrupt 17 in NVIC
   EndCritical(status);
 }
 
 
 //uses a default period instead of one specified
 void ADC_Init(uint8_t channelNum) {
+	int stat = StartCritical();
 	volatile uint32_t delay;
-	
+	collectDone = 0;
   // **** GPIO pin initialization ****
              // 1) activate clock
                         //    these are on GPIO_PORTE
@@ -246,7 +253,7 @@ void ADC_Init(uint8_t channelNum) {
    
   
 	
-  int status = StartCritical();
+ // int status = StartCritical();
 	SYSCTL_RCGCADC_R |= 0x01;     // activate ADC0 
 	SYSCTL_RCGCTIMER_R |= 0x01;   // activate timer0 
 	delay = SYSCTL_RCGCTIMER_R;   // allow time to finish activating
@@ -267,15 +274,35 @@ void ADC_Init(uint8_t channelNum) {
 	ADC0_IM_R |= 0x08;             // enable SS3 interrupts
 	ADC0_ACTSS_R |= 0x08;          // enable sample sequencer 3
 	NVIC_PRI4_R = (NVIC_PRI4_R&0xFFFF00FF)|0x00004000; //priority 2
-	NVIC_EN0_R = 1<<17;              // enable interrupt 17 in NVIC
-  EndCritical(status);
+	//	NVIC_PRI4_R = (NVIC_PRI4_R&0xFFFF00FF)|0x0000E000; //priority 7
+	NVIC_EN0_R |= 1<<17;              // enable interrupt 17 in NVIC
+  EndCritical(stat);
 }
 
-void ADC_ChangeSampleRate(uint32_t period) {
-	if(period < 8000000)
-		period = 8000000; //if the period is outside the bounds, the default is the lowest frequency
-	if(period > 80000000)
-		period = 80000000;
+void ADC_ChangeSampleRatePeriod(uint32_t period) {
+	
+	if(period > 8000000)		//no slower than 100Hz
+		period = 8000000; 	//if the period is outside the bounds, the default is the lowest frequency
+	
+	else if(period < 8000)	//no faster than 10000Hz
+		period = 8000;
+	
+	int status = StartCritical();
+	TIMER0_CTL_R = 0x00000000;    // disable timer0A during setup
+	TIMER0_TAILR_R = period-1;    // start value for trigger
+	TIMER0_CTL_R |= 0x00000001;   // enable timer0A 32-b, periodic, no interrupts
+	EndCritical(status);
+}
+
+void ADC_ChangeSampleRateHz(uint32_t Hz) {
+	
+	int period = 80000000/Hz; // p = 1/f. p * 1000000000 / 12.5 = timer ticks on 80Mhz bus clock
+	
+	if(period > 8000000)		//no slower than 100Hz
+		period = 8000000; 	//if the period is outside the bounds, the default is the lowest frequency
+	
+	else if(period < 8000)	//no faster than 10000Hz
+		period = 8000;
 	
 	int status = StartCritical();
 	TIMER0_CTL_R = 0x00000000;    // disable timer0A during setup
@@ -285,10 +312,13 @@ void ADC_ChangeSampleRate(uint32_t period) {
 }
 
 int ADC_Open(uint8_t channelNum){
+	int sr = StartCritical();
 	if(ADC0_SSMUX3_R != channelNum && channelNum <12) { //the channel needs to be updated
 		ADC0_SSMUX3_R = channelNum;
+		EndCritical(sr);
 		return channelNum;
 	}
+			EndCritical(sr);
 	return -1;
 }
 
@@ -297,6 +327,15 @@ void ADC0Seq3_Handler(void){	// timer generates conversion
   ADC0_ISC_R = 0x08;          // acknowledge ADC sequence 3 completion
   ADCvalue = ADC0_SSFIFO3_R;  // 12-bit result
 }
+
+
+//for lab 2
+/*
+void ADC0Seq3_Handler(void){	// timer generates conversion
+  ADC0_ISC_R = 0x08;          // acknowledge ADC sequence 3 completion
+  Producer(ADC0_SSFIFO3_R);  // 12-bit result
+}
+*/
 
 unsigned short ADC_In(){
 	int wait;
@@ -309,7 +348,66 @@ int ADC_CurrentChannel() {
 	return ADC0_SSMUX3_R;
 }
 
-void ADC_Collect(int a,int b,void(*c)(unsigned long)){
+//
+//
+/*
+int ADC_Collect(unsigned int channelNum, unsigned int fs, unsigned short buffer[], unsigned int numberOfSamples){
+	volatile int i;
+	int sr = StartCritical();
+	if(ADC_CurrentChannel()!=channelNum)
+			ADC_Open(channelNum);
 	
+	ADC_ChangeSampleRateHz(fs);
+	
+	EndCritical(sr);
+	
+	i = 0;
+	while(i<numberOfSamples){
+		buffer[i] = ADC_In();
+		i++;
+	}
+	
+	collectDone = 1;
+	return 0;
+}
+
+int ADC_Status(){
+	int sr = StartCritical();
+	int temp = collectDone;
+	collectDone = 0;
+	EndCritical(sr);
+	return temp;
+}
+*/
+
+#define FS 400            // producer/consumer sampling
+#define RUNLENGTH (20*FS) // display results and quit when NumSamples==RUNLENGTH
+
+int ADC_Collect(unsigned int channelNum, unsigned int fs, void *(task) (void)){
+	volatile int i;
+	int sr = StartCritical();
+	if(ADC_CurrentChannel()!=channelNum)
+			ADC_Open(channelNum);
+	
+	ADC_ChangeSampleRateHz(fs);
+	
+	EndCritical(sr);
+	
+	i = 0;
+	while(i<RUNLENGTH){
+		Producer(ADC_In());
+		i++;
+	}
+	
+	collectDone = 1;
+	return 0;
+}
+
+int ADC_Status(){
+	int sr = StartCritical();
+	int temp = collectDone;
+	collectDone = 0;
+	EndCritical(sr);
+	return temp;
 }
 

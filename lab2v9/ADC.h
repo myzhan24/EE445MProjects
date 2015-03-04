@@ -75,4 +75,8 @@ unsigned short ADC_In(void);
 //returns the current channel
 int ADC_CurrentChannel(void);
 
-void ADC_Collect(int,int,void(*)(unsigned long));
+
+//int ADC_Collect(unsigned int channelNum, unsigned int fs, unsigned short buffer[], unsigned int numberOfSamples);
+
+
+int ADC_Collect(unsigned int channelNum, unsigned int fs, void* (void));

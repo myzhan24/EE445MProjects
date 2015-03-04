@@ -185,6 +185,13 @@ uint16_t StTextColor = ST7735_YELLOW;
 #define ST7735_GMCTRP1 0xE0
 #define ST7735_GMCTRN1 0xE1
 
+
+
+void DisableInterrupts(void); // Disable interrupts
+void EnableInterrupts(void);  // Enable interrupts
+long StartCritical (void);    // previous I bit, disable interrupts
+void EndCritical(long sr);    // restore I bit to previous value
+void WaitForInterrupt(void);  // low power mode
 // standard ascii 5x7 font
 // originally from glcdfont.c from Adafruit project
 static const uint8_t Font[] = {
@@ -735,6 +742,7 @@ void ST7735_InitB(void) {
 // Input: option one of the enumerated options depending on tabs
 // Output: none
 void ST7735_InitR(enum initRFlags option) {
+	int sr = StartCritical();
   commonInit(Rcmd1);
   if(option == INITR_GREENTAB) {
     commandList(Rcmd2green);
@@ -755,6 +763,7 @@ void ST7735_InitR(enum initRFlags option) {
   ST7735_SetCursor(0,0);
   StTextColor = ST7735_YELLOW;
   ST7735_FillScreen(0);                 // set screen to black
+	EndCritical(sr);
 }
 
 
