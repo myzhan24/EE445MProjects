@@ -548,7 +548,7 @@ void BackgroundThread5c(void){   // called when Select button pushed
 	int what = OS_AddThread(&Thread4c,128,3); 
 }
       
-int main(void){   // Testmain3
+int testmain3(void){   // Testmain3
   Count4 = 0;          
   OS_Init();           // initialize, disable interrupts
 	PortF_Init();
@@ -609,7 +609,7 @@ void Thread4d(void){ int i;
 
   for(i=0;i<1;i++){
 		Count4++;
-    OS_Sleep(30000);
+    OS_Sleep(12);
   }
 	PF2 ^= 0x04;
   OS_Kill();
@@ -617,13 +617,14 @@ void Thread4d(void){ int i;
 void BackgroundThread5d(void){   // called when Select button pushed
   NumCreated += OS_AddThread(&Thread4d,128,3); 
 }
-int tesmain(void){   // Testmain4
+int main(void){   // Testmain4
   Count4 = 0;          
 	PortF_Init();
   OS_Init();           // initialize, disable interrupts
 	
   NumCreated = 0;
-  OS_AddPeriodicThread(&BackgroundThread1d,PERIOD,0); 
+  //OS_AddPeriodicThread(&BackgroundThread1d,PERIOD,0); 
+	OS_AddPeriodicThread(&BackgroundThread1d,800000,0); 
   OS_AddSW1Task(&BackgroundThread5d,2);
   NumCreated += OS_AddThread(&Thread2d,128,2); 
   NumCreated += OS_AddThread(&Thread3d,128,3); 

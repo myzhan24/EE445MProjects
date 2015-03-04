@@ -115,10 +115,6 @@
       <TargetDriverDllRegistry>
         <SetRegEntry>
           <Number>0</Number>
-          <Key>DLGUARM</Key>
-        </SetRegEntry>
-        <SetRegEntry>
-          <Number>0</Number>
           <Key>DLGDARM</Key>
           <Name>(1010=-1,-1,-1,-1,0)(1007=-1,-1,-1,-1,0)(1008=-1,-1,-1,-1,0)(1009=-1,-1,-1,-1,0)(1012=-1,-1,-1,-1,0)(9106=-1,-1,-1,-1,0)(9104=-1,-1,-1,-1,0)(9107=-1,-1,-1,-1,0)(9102=-1,-1,-1,-1,0)</Name>
         </SetRegEntry>
@@ -233,7 +229,7 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>271</TopLine>
+      <TopLine>276</TopLine>
       <CurrentLine>277</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\startup.s</PathWithFileName>
@@ -263,10 +259,10 @@
       <FileType>2</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>5</ColumnNumber>
+      <ColumnNumber>7</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>188</TopLine>
-      <CurrentLine>124</CurrentLine>
+      <TopLine>218</TopLine>
+      <CurrentLine>243</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\osasm.s</PathWithFileName>
       <FilenameWithoutPath>osasm.s</FilenameWithoutPath>
@@ -279,7 +275,7 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>26</ColumnNumber>
+      <ColumnNumber>30</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
       <TopLine>116</TopLine>
       <CurrentLine>117</CurrentLine>
@@ -311,10 +307,10 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>4</ColumnNumber>
+      <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>419</TopLine>
-      <CurrentLine>449</CurrentLine>
+      <TopLine>307</TopLine>
+      <CurrentLine>324</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\os.c</PathWithFileName>
       <FilenameWithoutPath>os.c</FilenameWithoutPath>
@@ -329,7 +325,7 @@
       <Focus>0</Focus>
       <ColumnNumber>2</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>9</TopLine>
+      <TopLine>39</TopLine>
       <CurrentLine>58</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\SysTickInts.c</PathWithFileName>
@@ -361,7 +357,7 @@
       <Focus>0</Focus>
       <ColumnNumber>20</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>165</TopLine>
+      <TopLine>175</TopLine>
       <CurrentLine>180</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\heap.c</PathWithFileName>
@@ -391,10 +387,10 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>74</ColumnNumber>
+      <ColumnNumber>9</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>532</TopLine>
-      <CurrentLine>565</CurrentLine>
+      <TopLine>301</TopLine>
+      <CurrentLine>314</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\lab2.c</PathWithFileName>
       <FilenameWithoutPath>lab2.c</FilenameWithoutPath>
@@ -441,7 +437,7 @@
       <Focus>0</Focus>
       <ColumnNumber>14</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>27</TopLine>
+      <TopLine>38</TopLine>
       <CurrentLine>49</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\Timer3A.c</PathWithFileName>
@@ -455,10 +451,10 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>45</ColumnNumber>
+      <ColumnNumber>7</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>72</TopLine>
-      <CurrentLine>120</CurrentLine>
+      <TopLine>102</TopLine>
+      <CurrentLine>121</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\Switch.c</PathWithFileName>
       <FilenameWithoutPath>Switch.c</FilenameWithoutPath>
@@ -471,10 +467,10 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
+      <ColumnNumber>1</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>25</TopLine>
-      <CurrentLine>31</CurrentLine>
+      <TopLine>40</TopLine>
+      <CurrentLine>64</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\Timer1A.c</PathWithFileName>
       <FilenameWithoutPath>Timer1A.c</FilenameWithoutPath>

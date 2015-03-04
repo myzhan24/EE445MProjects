@@ -67,6 +67,12 @@ NodeType *tail;								//tail of linked list, used for initialization of add thr
 volatile int numThreads=0;
 
 	
+// Fifo semaphores
+Sema4Type DataAvailable;
+Sema4Type DataRoomLeft;
+Sema4Type FifoAvailable;
+
+
 //volatile int *killSwitch;
 int SysTickPeriod = 0;
 volatile int periodicInterruptCount;
@@ -274,7 +280,13 @@ void OS_ClearMsTime(void){
 // Inputs:  none
 // Outputs: data 
 unsigned long OS_Fifo_Get(void){
-	return 0;
+    char output;
+    OS_Wait(&DataAvailable);
+    OS_bWait(&FifoAvailable);
+    TxFifo_Get(&output);
+    OS_bSignal(&FifoAvailable);
+    OS_Signal(&DataRoomLeft);
+		return output;
 }
 
 // ******** OS_Fifo_Init ************
@@ -287,18 +299,12 @@ unsigned long OS_Fifo_Get(void){
 //    e.g., 4 to 64 elements
 //    e.g., must be a power of 2,4,8,16,32,64,128
 void OS_Fifo_Init(unsigned long size){
-	int status = StartCritical();
-	//Fifo For Mailbox
-
-	TmailFifo_Init();
-	RmailFifo_Init();
-
-	
-	OS_InitSemaphore(&RmailFifoLock,1);				//semaphore for the software fifos
-	OS_InitSemaphore(&TmailFifoLock,1);				//semaphore for the software fifos
-  
-	EndCritical(status);
+    TxFifo_Init();
+    OS_InitSemaphore(&DataAvailable, 0);
+    OS_InitSemaphore(&DataRoomLeft, TXFIFOSIZE);
+    OS_InitSemaphore(&FifoAvailable, 1);
 }
+
 
 // ******** OS_Fifo_Put ************
 // Enter one data sample into the Fifo
@@ -308,18 +314,12 @@ void OS_Fifo_Init(unsigned long size){
 //          false if data not saved, because it was full
 // Since this is called by interrupt handlers 
 //  this function can not disable or enable interrupts
-int OS_Fifo_Put(unsigned long data){		//UART_OutChar, transmit out to oLED
-	while(TmailFifo_Put(data) == FIFOFAIL){};	//this should not happen because this is a background thread
-		
-		char letter;
-  while((TmailFifo_Size() > 0)){
-		OS_Wait(&TmailFifoLock);	// tx semaphore wait acquire
-    TmailFifo_Get(&letter);
-    UART0_DR_R = letter;
-		OS_Signal(&TmailFifoLock);	//tx semaphore signal release
-  }
-		
-	return 0;
+int OS_Fifo_Put(unsigned long data){
+    int value;
+//    OS_bWait(&FifoAvailable);
+    value = TxFifo_Put(data);
+//    OS_bSignal(&FifoAvailable);
+    return value;
 }
 
 //******** OS_Id *************** 
