@@ -142,7 +142,7 @@ void OS_Init(void){
 		//Board_Init();
 		Heap_Init();
 		OS_Fifo_Init(FIFOSIZE);
-		UART_Init();
+	//	UART_Init();
 		
     EnableInterrupts();
 }

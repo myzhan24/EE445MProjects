@@ -298,7 +298,9 @@ unsigned long myId = OS_Id();
 // inputs:  none
 // outputs: none
 void Interpreter(void){	// just a prototype, link to your interpreter
+	while(1){
 	Interpreter_CommandLine();
+	}
 }
 // add the following commands, leave other commands, if they make sense
 // 1) print performance measures 

@@ -110,10 +110,10 @@ void UART_Init(void){
   GPIO_PORTA_DEN_R |= 0x03;             // enable digital I/O on PA1-0
                                         // configure PA1-0 as UART
   GPIO_PORTA_PCTL_R = (GPIO_PORTA_PCTL_R&0xFFFFFF00)+0x00000011;
-  GPIO_PORTA_AMSEL_R = 0;               // disable analog functionality on PA
+  GPIO_PORTA_AMSEL_R &= ~0x03;               // disable analog functionality on PA
                                         // UART0=priority 2
   NVIC_PRI1_R = (NVIC_PRI1_R&0xFFFF00FF)|0x00004000; // bits 13-15
-  NVIC_EN0_R = NVIC_EN0_INT5;           // enable interrupt 5 in NVIC
+  NVIC_EN0_R |= NVIC_EN0_INT5;           // enable interrupt 5 in NVIC
 	OS_InitSemaphore(&txFifoLock,1);				//semaphore for the software fifos
 	OS_InitSemaphore(&rxFifoLock,1);				//semaphore for the software fifos
   EndCritical(status);
