@@ -1,0 +1,74 @@
+// copy from hardware RX FIFO to software RX FIFO
+// stop when hardware RX FIFO is empty or software RX FIFO is full
+/*
+void static copyHardwareToSoftware(void){
+  char letter;
+//	int sr;
+	//producer for rx fifo
+  while(rxFifoEmpty.Value){
+//		OS_Wait(&rxFifoLock);//semaphore acquire
+	//	sr= StartCritical();
+		OS_Wait(&rxFifoEmpty);		//wait until the fifo has space
+    letter = UART0_DR_R;
+    RxFifo_Put(letter);
+		OS_Signal(&rxFifoFull);	//signal that there is an item in the fifo
+	//	OS_Signal(&rxFifoLock);	//signal that there is another letter available for InChar
+//		EndCritical(sr);
+//		OS_Signal(&rxFifoLock);//rx semaphore release
+		//semaphore signal
+  }
+}
+
+
+
+// copy from software TX FIFO to hardware TX FIFO
+// stop when software TX FIFO is empty or hardware TX FIFO is full
+void static copySoftwareToHardware(void){
+  char letter;
+//consumer for the tx fifo
+
+  while(((UART0_FR_R&UART_FR_TXFF) == 0) && (TxFifo_Size() > 0)){
+		OS_Wait(&txFifoFull);
+    TxFifo_Get(&letter);
+    UART0_DR_R = letter;
+		OS_Signal(&txFifoEmpty);
+  }
+}
+
+// input ASCII character from UART
+// spin if RxFifo is empty
+
+
+char UART_InChar(void){
+  char letter;
+  //while(RxFifo_Get(&letter) == FIFOFAIL){};
+	//instead of a busy wait, do an OS_Wait on the rxfifo semaphore
+	//while(RxFifo_Get(&letter) == FIFOFAIL) //there is nothing in the fifo
+	
+	
+	//consumer of rx Fifo
+	OS_Wait(&rxFifoFull);		//wait until there is something in the rx fifo to consume
+//	OS_Wait(&rxFifoLock);		
+	RxFifo_Get(&letter);
+	OS_Signal(&rxFifoEmpty);	//one rx item was consumed
+  return(letter);
+}
+
+
+
+// output ASCII character to UART
+// spin if TxFifo is full
+void UART_OutChar(char data){
+
+	
+	//producer for tx fifo
+	
+	OS_Wait(&txFifoEmpty);
+	TxFifo_Put(data);
+	OS_Signal(&txFifoFull);
+	UART0_IM_R &= ~UART_IM_TXIM;          // disable TX FIFO interrupt
+  copySoftwareToHardware();
+  UART0_IM_R |= UART_IM_TXIM;           // enable TX FIFO interrupt
+	
+}*/
+
