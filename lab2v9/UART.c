@@ -147,13 +147,17 @@ void static copySoftwareToHardware(void){
 // spin if RxFifo is empty
 char UART_InChar(void){
   char letter;
-  while(RxFifo_Get(&letter) == FIFOFAIL){};
+  while(RxFifo_Get(&letter) == FIFOFAIL){
+		//WaitForInterrupt();
+	}
   return(letter);
 }
 // output ASCII character to UART
 // spin if TxFifo is full
 void UART_OutChar(char data){
-  while(TxFifo_Put(data) == FIFOFAIL){};
+  while(TxFifo_Put(data) == FIFOFAIL){
+		//WaitForInterrupt();
+	}
   UART0_IM_R &= ~UART_IM_TXIM;          // disable TX FIFO interrupt
   copySoftwareToHardware();
   UART0_IM_R |= UART_IM_TXIM;           // enable TX FIFO interrupt

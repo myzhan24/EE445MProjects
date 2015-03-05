@@ -232,9 +232,9 @@ int OS_AddThread(void (*task)(void), unsigned long stackSize, unsigned long prio
 // input:  none
 // output: none
 void OS_Suspend(void){
-	  NVIC_INT_CTRL_R |= 0x10000000;    // trigger PendSV 
-//	NVIC_ST_CURRENT_R = 0;
-//	NVIC_INT_CTRL_R |= 0x04000000;  //trigger SYSTICK Interrupt
+	//  NVIC_INT_CTRL_R |= 0x10000000;    // trigger PendSV 
+	NVIC_ST_CURRENT_R = 0;
+	NVIC_INT_CTRL_R |= 0x04000000;  //trigger SYSTICK Interrupt
 }
 
 // calls a thread with a periodic interrupt

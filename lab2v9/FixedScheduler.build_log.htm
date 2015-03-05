@@ -16,16 +16,13 @@ ADC.c(341): warning:  #550-D: variable "wait" was set but never used
         int wait;
 ADC.c: 1 warning, 0 errors
 compiling Interpreter.c...
-Interpreter.c(138): warning:  #177-D: variable "sr2" was declared but never referenced
-  int sr2;      
-Interpreter.c: 1 warning, 0 errors
 compiling os.c...
 compiling SysTickInts.c...
 compiling UART.c...
 compiling heap.c...
 compiling ST7735.c...
 compiling lab2.c...
-lab2.c(222): warning:  #167-D: argument of type "void (*)(unsigned long)" is incompatible with parameter of type "void *(*)(void)"
+lab2.c(222): warning:  #167-D: argument of type "void (*)(unsigned long)" is incompatible with parameter of type "void (*)(void)"
     ADC_Collect(5, FS, &Producer); // start ADC sampling, channel 5, PD2, 400 Hz
 lab2.c: 1 warning, 0 errors
 assembling PID_stm32.s...
@@ -40,19 +37,31 @@ Timer1A.c(40): warning:  #550-D: variable "delay" was set but never used
   void Timer1A_Init(uint32_t period){ int delay;
 Timer1A.c: 1 warning, 0 errors
 linking...
-Program Size: Code=12572 RO-data=2052 RW-data=336 ZI-data=9216  
-".\FixedScheduler.axf" - 0 Error(s), 5 Warning(s).
+Program Size: Code=11596 RO-data=2052 RW-data=336 ZI-data=9216  
+".\FixedScheduler.axf" - 0 Error(s), 4 Warning(s).
 Load "E:\\Users\\Matt\\Documents\\GitHub\\EE445MProjects\\lab2v9\\FixedScheduler.axf" 
 Connecting: Mode=JTAG, Speed=1000000Hz
 Erase Done.
 Programming Done.
 Verify OK.
-FixedScheduler.axf" - 2 Error(s), 6 Warning(s).
-Target not created
+</pre>
+</body>
+</html>
+1A.c: 1 warning, 0 errors
+linking...
+Program Size: Code=12772 RO-data=2052 RW-data=336 ZI-data=9216  
+".\FixedScheduler.axf" - 0 Error(s), 7 Warning(s).
 Load "E:\\Users\\Matt\\Documents\\GitHub\\EE445MProjects\\lab2v9\\FixedScheduler.axf" 
-_____^
-*** error 56: cannot open file
-Error: Flash Download failed  -  Could not load file 'E:\Users\Matt\Documents\GitHub\EE445MProjects\lab2v9\FixedScheduler.axf'
+Connecting: Mode=JTAG, Speed=1000000Hz
+Erase Done.
+Programming Done.
+Verify OK.
+xf" 
+Connecting: Mode=JTAG, Speed=1000000Hz
+Erase Done.
+Programming Done.
+Verify OK.
+9\FixedScheduler.axf'
 8E: Undefined symbol endCritical (referred from interpreter.o).
 Not enough information to list image symbols.
 Finished: 1 information, 0 warning and 1 error messages.

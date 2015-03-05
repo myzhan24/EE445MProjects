@@ -40,7 +40,6 @@ void serviceCommand(char *bufPt) {
 	volatile int line;
 	char first[]={'A','D','C',' ','0',':',' ',0};
 	volatile int adcval;
-	int sr = StartCritical();
 	if(strcmp(bufPt,"adcopen")==0)
 	{
 		UART_OutString("Enter ADC port: ");
@@ -59,6 +58,10 @@ void serviceCommand(char *bufPt) {
 			OutCRLF();
 			OutCRLF();
 		}
+	}
+	else if(strcmp(bufPt,"derp")==0){
+		UART_OutString("HEEEEEY");
+		OutCRLF();
 	}
 	else if(strcmp(bufPt,"print")==0)
 	{
@@ -130,17 +133,15 @@ void serviceCommand(char *bufPt) {
 		
 		ST7735_Message(device, line, first, adcval);
 	}
-	EndCritical(sr);
 }
 
 void promptCommand(char *bufPt, uint16_t max) {
-int sr;
-int sr2;	
 int length=0;
 char character;
 	UART_OutString("Enter a Command: ");
   character = UART_InChar();
-  while(character != CR){
+  //sr=UART_InUDec();
+	while(character != CR){
 		
     if(character == BS){
       if(length){
@@ -157,15 +158,90 @@ char character;
     }
     character = UART_InChar();
   }
-	sr = StartCritical();
   *bufPt = 0;
 	bufPt -= length;
 	OutCRLF();
 	serviceCommand(bufPt);
-	EndCritical(sr);
+}
+
+
+void promptNumber(char *bufPt, uint16_t max) {
+int number=0;
+int length=0;
+char character;
+	UART_OutString("Enter a Command: ");
+  character = UART_InChar();
+  //sr=UART_InUDec();
+	while(character != CR){
+		
+		if((character>='0') && (character<='9')) {
+      number = 10*number+(character-'0');   // this line overflows if above 4294967295
+      length++;
+      UART_OutChar(character);
+    }
+		
+    else if(character == BS){
+      if(length){
+				bufPt--;
+        length--;
+				number /= 10;
+        UART_OutChar(BS);
+      }
+    }
+    else if(length < max){
+      *bufPt = character;
+      bufPt++;
+      length++;
+      UART_OutChar(character);
+    }
+    character = UART_InChar();
+  }
+  *bufPt = 0;
+	bufPt -= length;
+	OutCRLF();
+	serviceCommand(bufPt);
+}
+
+
+void promptNumberV(char *bufPt, uint16_t max) {
+int number=0;
+int length=0;
+char character;
+	UART_OutString("Enter a number: ");
+  character = UART_InChar();
+  while(character != CR){ // accepts until <enter> is typed
+// The next line checks that the input is a digit, 0-9.
+// If the character is not 0-9, it is ignored and not echoed
+    if((character>='0') && (character<='9')) {
+      number = 10*number+(character-'0');   // this line overflows if above 4294967295
+      length++;
+      UART_OutChar(character);
+    }
+		
+    else if(character == BS){
+      if(length){
+				bufPt--;
+        length--;
+				number /= 10;
+        UART_OutChar(BS);
+      }
+    }
+    else if(length < max){
+      *bufPt = character;
+      bufPt++;
+      length++;
+      UART_OutChar(character);
+    }
+    //character = UART_InChar();
+    character = UART_InChar();
+  }
+	OutCRLF();
+
 }
 
 void Interpreter_CommandLine(void){
 		char string[20];
-		promptCommand(string,19);
+		//promptCommand(string,19);
+		//promptNumber(string,19);
+		promptNumber(string,19);
 }

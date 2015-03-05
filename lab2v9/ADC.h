@@ -79,4 +79,4 @@ int ADC_CurrentChannel(void);
 //int ADC_Collect(unsigned int channelNum, unsigned int fs, unsigned short buffer[], unsigned int numberOfSamples);
 
 
-int ADC_Collect(unsigned int channelNum, unsigned int fs, void* (void));
+int ADC_Collect(unsigned int channelNum, unsigned int fs,void(*task)(void));
