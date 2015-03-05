@@ -383,7 +383,7 @@ int ADC_Status(){
 #define FS 400            // producer/consumer sampling
 #define RUNLENGTH (20*FS) // display results and quit when NumSamples==RUNLENGTH
 
-int ADC_Collect(unsigned int channelNum, unsigned int fs, void *(task) (void)){
+int ADC_Collect(unsigned int channelNum, unsigned int fs, void* (task) (void)){
 	volatile int i;
 	int sr = StartCritical();
 	if(ADC_CurrentChannel()!=channelNum)

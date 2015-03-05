@@ -8,6 +8,12 @@
 #include "UART.h"
 
 
+void DisableInterrupts(void); // Disable interrupts
+void EnableInterrupts(void);  // Enable interrupts
+long StartCritical (void);    // previous I bit, disable interrupts
+void EndCritical(long sr);    // restore I bit to previous value
+void WaitForInterrupt(void);  // low power mode
+
 //testing LCD and ADC
 void ADCReadPrint(void) {
 		volatile int adc = 0;
@@ -34,6 +40,7 @@ void serviceCommand(char *bufPt) {
 	volatile int line;
 	char first[]={'A','D','C',' ','0',':',' ',0};
 	volatile int adcval;
+	int sr = StartCritical();
 	if(strcmp(bufPt,"adcopen")==0)
 	{
 		UART_OutString("Enter ADC port: ");
@@ -123,18 +130,21 @@ void serviceCommand(char *bufPt) {
 		
 		ST7735_Message(device, line, first, adcval);
 	}
+	EndCritical(sr);
 }
 
 void promptCommand(char *bufPt, uint16_t max) {
-	
+int sr;
+int sr2;	
 int length=0;
 char character;
 	UART_OutString("Enter a Command: ");
   character = UART_InChar();
   while(character != CR){
+		
     if(character == BS){
       if(length){
-        bufPt--;
+				bufPt--;
         length--;
         UART_OutChar(BS);
       }
@@ -147,10 +157,12 @@ char character;
     }
     character = UART_InChar();
   }
+	sr = StartCritical();
   *bufPt = 0;
 	bufPt -= length;
 	OutCRLF();
 	serviceCommand(bufPt);
+	EndCritical(sr);
 }
 
 void Interpreter_CommandLine(void){

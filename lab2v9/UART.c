@@ -78,6 +78,7 @@ AddIndexFifo(Tx, FIFOSIZE, char, FIFOSUCCESS, FIFOFAIL)
 Sema4Type txFifoLock;
 Sema4Type rxFifoLock;
 
+
 //---------------------OutCRLF---------------------
 // Output a CR,LF to UART to go to a new line
 // Input: none
@@ -112,21 +113,22 @@ void UART_Init(void){
   GPIO_PORTA_PCTL_R = (GPIO_PORTA_PCTL_R&0xFFFFFF00)+0x00000011;
   GPIO_PORTA_AMSEL_R = 0;               // disable analog functionality on PA
                                         // UART0=priority 2
-  NVIC_PRI1_R = (NVIC_PRI1_R&0xFFFF00FF)|0x00004000; // bits 13-15
-  NVIC_EN0_R = NVIC_EN0_INT5;           // enable interrupt 5 in NVIC
-	OS_InitSemaphore(&txFifoLock,1);				//semaphore for the software fifos
-	OS_InitSemaphore(&rxFifoLock,1);				//semaphore for the software fifos
-  EndCritical(status);
+  //NVIC_PRI1_R = (NVIC_PRI1_R&0xFFFF0FFF)|0x00004000; // bits 13-15
+	NVIC_PRI1_R = (NVIC_PRI1_R&0xFFFF0FFF)|0x0000E000; // bits 13-15 priority 7
+  NVIC_EN0_R |= NVIC_EN0_INT5;           // enable interrupt 5 in NVIC
+
+	EndCritical(status);
 }
+
 // copy from hardware RX FIFO to software RX FIFO
 // stop when hardware RX FIFO is empty or software RX FIFO is full
 void static copyHardwareToSoftware(void){
   char letter;
   while(((UART0_FR_R&UART_FR_RXFE) == 0) && (RxFifo_Size() < (FIFOSIZE - 1))){
-		OS_Wait(&rxFifoLock);//semaphore acquire
+	//	OS_Wait(&rxFifoLock);//semaphore acquire
     letter = UART0_DR_R;
     RxFifo_Put(letter);
-		OS_Signal(&rxFifoLock);//rx semaphore release
+//		OS_Signal(&rxFifoLock);//rx semaphore release
 		//semaphore signal
   }
 }
@@ -135,10 +137,10 @@ void static copyHardwareToSoftware(void){
 void static copySoftwareToHardware(void){
   char letter;
   while(((UART0_FR_R&UART_FR_TXFF) == 0) && (TxFifo_Size() > 0)){
-		OS_Wait(&txFifoLock);	// tx semaphore wait acquire
+//		OS_Wait(&txFifoLock);	// tx semaphore wait acquire
     TxFifo_Get(&letter);
     UART0_DR_R = letter;
-		OS_Signal(&txFifoLock);	//tx semaphore signal release
+	//	OS_Signal(&txFifoLock);	//tx semaphore signal release
   }
 }
 // input ASCII character from UART
@@ -156,6 +158,8 @@ void UART_OutChar(char data){
   copySoftwareToHardware();
   UART0_IM_R |= UART_IM_TXIM;           // enable TX FIFO interrupt
 }
+
+
 // at least one of three things has happened:
 // hardware TX FIFO goes from 3 to 2 or less items
 // hardware RX FIFO goes from 1 to 2 or more items

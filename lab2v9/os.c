@@ -128,7 +128,7 @@ void OS_Init(void){
 
     // code below taken from PeriodicSysTickInts.c
     PLL_Init();                 // bus clock at 80 MHz
-	ST7735_InitR(INITR_REDTAB);
+		ST7735_InitR(INITR_REDTAB);
 		Timer1A_Init(OSTIMERPERIOD);
 		SysTick_Init(SYSTICKPERIOD,6);//enable for lab2.1 testmain2
 		
@@ -141,7 +141,7 @@ void OS_Init(void){
 		
 		//Board_Init();
 		Heap_Init();
-		OS_Fifo_Init(FIFOSIZE);
+		//OS_Fifo_Init(FIFOSIZE);
 		UART_Init();
 		
     EnableInterrupts();
@@ -233,6 +233,8 @@ int OS_AddThread(void (*task)(void), unsigned long stackSize, unsigned long prio
 // output: none
 void OS_Suspend(void){
 	  NVIC_INT_CTRL_R |= 0x10000000;    // trigger PendSV 
+//	NVIC_ST_CURRENT_R = 0;
+//	NVIC_INT_CTRL_R |= 0x04000000;  //trigger SYSTICK Interrupt
 }
 
 // calls a thread with a periodic interrupt
@@ -284,6 +286,7 @@ int OS_AddSW1Task(void(*task)(void), unsigned long priority){
 // Outputs: none
 // You are free to change how this works
 void OS_ClearMsTime(void){
+	RTC=0;
 }
 
 // ******** OS_Fifo_Get ************
@@ -439,7 +442,11 @@ unsigned long OS_MailBox_Recv(void){
 // You are free to select the time resolution for this function
 // It is ok to make the resolution to match the first call to OS_AddPeriodicThread
 unsigned long OS_MsTime(void){
-	return NVIC_ST_CURRENT_R / 80000;	//SysTick Current Time 
+	int ustime;
+	int sr = StartCritical();
+	ustime = OS_Time();
+	EndCritical(sr);
+	return ustime/1000;
 }
  
  // ******** OS_Signal ************
@@ -449,10 +456,10 @@ unsigned long OS_MsTime(void){
 // input:  pointer to a counting semaphore
 // output: none
 void OS_Signal(Sema4Type *semaPt){
-//	long status;
-//	status= StartCritical();
+	int status;
+	status= StartCritical();
 	semaPt->Value++;
-//	EndCritical(status);
+	EndCritical(status);
 	//OS_Suspend();
 }
 
@@ -541,8 +548,9 @@ void OS_Sleep(unsigned long sleepTime){
 	
 	//1 milliseconds to 1000 micro seconds
 	int status = StartCritical();
-	NodePt->Sleep = sleepTime*1000+OS_Time();
+	int currentTime = OS_Time();
 	EndCritical(status);
+	NodePt->Sleep = (sleepTime*1000)+currentTime;
 	OS_Suspend();
 } 
 
