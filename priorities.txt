@@ -1,0 +1,13 @@
+SWITCH	3
+Timer3A	4
+TIMER1A	5
+SYSTICK	6
+ADC	7
+
+
+
+p = 1 / f
+
+1 sec * 1000000 ns / 1 sec * 1 tick / 12.5ns
+
+1/f = period * 80000
