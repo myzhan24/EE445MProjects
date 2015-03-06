@@ -109,7 +109,8 @@ void Board_Init(void(*task)(void)){
                               // GPIO PortF=priority 2
   //NVIC_PRI7_R = (NVIC_PRI7_R&0xFF00FFFF)|0x00400000; // bits 21-23	
 	//NVIC_PRI7_R = (NVIC_PRI7_R&0xFF0FFFFF)|0x00A00000; // (g) priority 5
-	NVIC_PRI7_R = (NVIC_PRI7_R&0xFF0FFFFF)|0x00600000; // (g) priority 3
+	//NVIC_PRI7_R = (NVIC_PRI7_R&0xFF0FFFFF)|0x00600000; // (g) priority 3
+	NVIC_PRI7_R = (NVIC_PRI7_R&0xFF0FFFFF)|0x00200000; // (g) priority 1
 	NVIC_EN0_R |= (NVIC_EN0_INT30);	// enable interrupt 30
 	
 	EndCritical(status);

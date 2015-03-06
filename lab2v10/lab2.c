@@ -60,6 +60,12 @@ unsigned long JitterHistogram[JITTERSIZE]={0,};
 	
 
 
+void DisableInterrupts(void); // Disable interrupts
+void EnableInterrupts(void);  // Enable interrupts
+long StartCritical (void);    // previous I bit, disable interrupts
+void EndCritical(long sr);    // restore I bit to previous value
+void WaitForInterrupt(void);  // low power mode
+
 void PortE_Init(void){ unsigned long volatile delay;
   SYSCTL_RCGCGPIO_R |= 0x10;       // activate port E
   delay = SYSCTL_RCGC2_R;        
@@ -204,15 +210,16 @@ void Producer(unsigned long data){
     NumSamples++;               // number of samples
     if(OS_Fifo_Put(data) == 0){ // send to consumer
       DataLost++;
-			UART_OutString("Data Lost: ");
-			UART_OutUDec(DataLost);
-			OutCRLF();
+			//UART_OutString("Data Lost: ");
+		//	UART_OutUDec(DataLost);
+		//	OutCRLF();
     }
+		/*
 			else{
 			UART_OutString("OS FIFO PUT: ");
 			UART_OutUDec(data);
 			OutCRLF();
-			}
+			}*/
   } 
 }
 void Display(void); 
@@ -247,26 +254,8 @@ unsigned long myId = OS_Id();
 // inputs:  none                            
 // outputs: none
 
-void Display(void){ 
-unsigned long data,voltage;
-  //ST7735_Message(0,1,"Run length = ",(RUNLENGTH)/FS);   // top half used for Display
-	UART_OutString("Run length = ");
-	UART_OutUDec((RUNLENGTH)/FS);
-	OutCRLF();
-  while(NumSamples < RUNLENGTH) { 
-    data = OS_MailBox_Recv();
-    voltage = 3000*data/4095;               // calibrate your device so voltage is in mV
-    PE3 = 0x08;
-    //ST7735_Message(0,2,"v(mV) =",voltage);  
-		UART_OutString("v(mV) =");
-		UART_OutUDec(voltage);
-		OutCRLF();
-    PE3 = 0x00;
-  } 
-  OS_Kill();  // done
-} 
 
-/*
+
 void Display(void){ 
 unsigned long data,voltage;
   ST7735_Message(0,1,"Run length = ",(RUNLENGTH)/FS);   // top half used for Display
@@ -279,7 +268,7 @@ unsigned long data,voltage;
   } 
   OS_Kill();  // done
 } 
-*/
+
 //--------------end of Task 3-----------------------------
 
 //------------------Task 4--------------------------------
@@ -371,6 +360,24 @@ void printstuff(void){
 	OS_Sleep(40);
 	}
 }
+void mywork(){
+//int sr = StartCritical();
+    ST7735_Message(0,2,"howdy",1);  
+	//EndCritical(sr);
+	OS_Sleep(40);
+	Output_Clear();
+  OS_Kill();  // done
+}
+void myPush(void){
+  if(OS_MsTime() > 20){ // debounce
+    if(OS_AddThread(&mywork,100,4)){
+      NumCreated++; 
+    }
+    OS_ClearMsTime();  // at least 20ms between touches
+  }
+}
+
+
 
 //adc collect tester adc test main
 int adctestmain(void){
@@ -378,6 +385,7 @@ int adctestmain(void){
   PortF_Init();
 	ADC_Init(4);  // sequencer 3, channel 4, PD3, sampling in DAS()
 	//ADC_InitT0(0, 5000000);
+	OS_AddSW1Task(&myPush,2);
 	NumCreated += OS_AddThread(&ADCTASK,128,1); 
 	//NumCreated += OS_AddThread(&Interpreter,128,2); 
 	NumCreated += OS_AddThread(&printstuff,128,2); 

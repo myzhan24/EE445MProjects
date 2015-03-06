@@ -446,11 +446,11 @@ unsigned long OS_MailBox_Recv(void){
 // You are free to select the time resolution for this function
 // It is ok to make the resolution to match the first call to OS_AddPeriodicThread
 unsigned long OS_MsTime(void){
-	int ustime;
+	int ticks;
 	int sr = StartCritical();
-	ustime = OS_Time();
+	ticks = OS_Time();
 	EndCritical(sr);
-	return ustime/1000;
+	return ticks*80000;
 }
  
  // ******** OS_Signal ************

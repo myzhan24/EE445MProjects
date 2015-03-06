@@ -1559,8 +1559,10 @@ int ferror(FILE *f){
 // Inputs: none
 // Outputs: none
 void Output_Init(void){
+	int sr = StartCritical();
   ST7735_InitR(INITR_REDTAB);
   ST7735_FillScreen(0);                 // set screen to black
+	EndCritical(sr);
 }
 
 // Clear display
@@ -1590,6 +1592,7 @@ void Output_Color(uint32_t newColor){ // Set color of future output
 // Input: device 0 for top half of screen, 1 for bottom half, line 0 to 3 for line number, string null terminated ASCII string, value idk
 // output: Message sent to top or bottom display
 void ST7735_Message (uint16_t device, uint16_t line, char *string, uint32_t value){
+	int sr = StartCritical();
 	uint16_t lineStart = device*8; //top half of display is lines 0-7, bottom half 8-15
     if (device > 1 || line > 3) { return; }//error
     
@@ -1597,6 +1600,7 @@ void ST7735_Message (uint16_t device, uint16_t line, char *string, uint32_t valu
     ST7735_SetCursor(0, lineStart);
     ST7735_OutString(string); //need to implement text wrapping
 		ST7735_OutUDec(value);
+	EndCritical(sr);
 }
 
 
