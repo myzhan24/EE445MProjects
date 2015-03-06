@@ -103,7 +103,7 @@ void (*currentTask)(void); //make it a list for multithread
 void (*swTask)(void);
 
 void Color_Init(void){ unsigned long volatile delay;	//for pe2
-  SYSCTL_RCGC2_R |= SYSCTL_RCGC2_GPIOF; // activate port F
+  SYSCTL_RCGCGPIO_R |= SYSCTL_RCGC2_GPIOF; // activate port F
   delay = SYSCTL_RCGC2_R;          // allow time to finish activating
   GPIO_PORTF_DIR_R |= 0x0E;        // make PF3-1 output (PF3-1 built-in LEDs)
   GPIO_PORTF_AFSEL_R &= ~0x0E;     // disable alt funct on PF3-1
@@ -128,7 +128,11 @@ void OS_Init(void){
 
     // code below taken from PeriodicSysTickInts.c
     PLL_Init();                 // bus clock at 80 MHz
-		ST7735_InitR(INITR_REDTAB);
+		//ST7735_InitR(INITR_REDTAB);
+		Output_Init();
+		UART_Init();
+		
+		Heap_Init();
 		Timer1A_Init(OSTIMERPERIOD);
 		SysTick_Init(SYSTICKPERIOD,6);//enable for lab2.1 testmain2
 		
@@ -140,9 +144,9 @@ void OS_Init(void){
 		//ADC_Init(2);
 		
 		//Board_Init();
-		Heap_Init();
+		
 		//OS_Fifo_Init(FIFOSIZE);
-		UART_Init();
+		
 		
     EnableInterrupts();
 }
