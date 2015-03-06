@@ -61,7 +61,7 @@ unsigned long JitterHistogram[JITTERSIZE]={0,};
 
 
 void PortE_Init(void){ unsigned long volatile delay;
-  SYSCTL_RCGC2_R |= 0x10;       // activate port E
+  SYSCTL_RCGCGPIO_R |= 0x10;       // activate port E
   delay = SYSCTL_RCGC2_R;        
   delay = SYSCTL_RCGC2_R;         
   GPIO_PORTE_DIR_R |= 0x0F;    // make PE3-0 output heartbeats
@@ -71,7 +71,7 @@ void PortE_Init(void){ unsigned long volatile delay;
   GPIO_PORTE_AMSEL_R &= ~0x0F;      // disable analog functionality on PF
 }
 void PortF_Init(void){ unsigned long volatile delay;	//for pe2
-  SYSCTL_RCGC2_R |= 0x20;       // activate port E
+  SYSCTL_RCGCGPIO_R |= 0x20;       // activate port E
   delay = SYSCTL_RCGC2_R;        
   delay = SYSCTL_RCGC2_R;         
   GPIO_PORTF_DIR_R |= 0x04;    // make PE3-0 output heartbeats
@@ -204,11 +204,15 @@ void Producer(unsigned long data){
     NumSamples++;               // number of samples
     if(OS_Fifo_Put(data) == 0){ // send to consumer
       DataLost++;
+			UART_OutString("Data Lost: ");
+			UART_OutUDec(DataLost);
+			OutCRLF();
     }
 			else{
+			UART_OutString("OS FIFO PUT: ");
 			UART_OutUDec(data);
-				OutCRLF();
-				}
+			OutCRLF();
+			}
   } 
 }
 void Display(void); 
@@ -222,7 +226,6 @@ void Consumer(void){
 unsigned long data,DCcomponent;   // 12-bit raw ADC sample, 0 to 4095
 unsigned long t;                  // time in 2.5 ms
 unsigned long myId = OS_Id(); 
-	while(1){
   ADC_Collect(5, FS, &Producer); // start ADC sampling, channel 5, PD2, 400 Hz
   NumCreated += OS_AddThread(&Display,128,0); 
   while(NumSamples < RUNLENGTH) { 
@@ -236,8 +239,7 @@ unsigned long myId = OS_Id();
     DCcomponent = y[0]&0xFFFF; // Real part at frequency 0, imaginary part should be zero
     OS_MailBox_Send(DCcomponent); // called every 2.5ms*64 = 160ms
   }
-  //OS_Kill();  // done
-}
+  OS_Kill();  // done
 }
 //******** Display *************** 
 // foreground thread, accepts data from consumer
@@ -337,6 +339,51 @@ void Interpreter(void){	// just a prototype, link to your interpreter
 //    i.e., x[], y[] 
 //--------------end of Task 5-----------------------------
 
+void Printer(unsigned long data){
+	//UART_OutString("ADC Collect Data: ");
+	UART_OutUDec(data);
+	OutCRLF();
+	//OutCRLF();
+}
+
+void ADCTASK(void){
+	//ADC_Open(5);
+	//ADC_ChangeSampleRateHz(FS);
+	while(1){
+		ADC_Collect(5,FS, &Printer); // start ADC sampling, channel 5, PD2, 400 Hz
+	/*UART_OutString("ADC Collect Data: ");
+	UART_OutUDec(ADC_In());
+	OutCRLF();
+	OutCRLF();*/
+		PF2 ^= 0x04;
+		OS_Sleep(40);
+	}
+}
+
+void printstuff(void){
+	int i=0;
+	while(1){
+		i++;
+		if(i>100000)
+			i=0;
+	UART_OutString("@@@@@@@@@@@@@@:)");
+	OutCRLF();
+	OS_Sleep(40);
+	}
+}
+
+//adc collect tester adc test main
+int adctestmain(void){
+	OS_Init();           // initialize, disable interrupts
+  PortF_Init();
+	ADC_Init(4);  // sequencer 3, channel 4, PD3, sampling in DAS()
+	//ADC_InitT0(0, 5000000);
+	NumCreated += OS_AddThread(&ADCTASK,128,1); 
+	//NumCreated += OS_AddThread(&Interpreter,128,2); 
+	NumCreated += OS_AddThread(&printstuff,128,2); 
+	OS_Launch(TIME_2MS); // doesn't return, interrupts enabled in here
+  return 0;            // this never executes
+}
 
 //*******************final main DEMONTRATE THIS TO TA**********
 int main(void){ 
@@ -354,13 +401,13 @@ int main(void){
   OS_AddSW1Task(&SW1Push,2);
 //  OS_AddSW2Task(&SW2Push,2);  // add this line in Lab 3
   ADC_Init(4);  // sequencer 3, channel 4, PD3, sampling in DAS()
-  //OS_AddPeriodicThread(&DAS,PERIOD,1); // 2 kHz real time sampling of PD3
+  OS_AddPeriodicThread(&DAS,PERIOD,1); // 2 kHz real time sampling of PD3
 
   NumCreated = 0 ;
 // create initial foreground threads
- // NumCreated += OS_AddThread(&Interpreter,128,2); 
+  NumCreated += OS_AddThread(&Interpreter,128,2); 
   NumCreated += OS_AddThread(&Consumer,128,1); 
-//  NumCreated += OS_AddThread(&PID,128,3);  // Lab 3, make this lowest priority
+  NumCreated += OS_AddThread(&PID,128,3);  // Lab 3, make this lowest priority
  
   OS_Launch(TIME_2MS); // doesn't return, interrupts enabled in here
   return 0;            // this never executes

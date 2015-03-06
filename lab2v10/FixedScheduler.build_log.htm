@@ -3,42 +3,16 @@
 <pre>
 <h1>µVision Build Log</h1>
 <h2>Project:</h2>
-C:\Users\Matt\Documents\EE445M\EE445MProjects\lab2v10\FixedScheduler.uvproj
-Project File Date:  03/03/2015
+E:\Users\Matt\Documents\GitHub\EE445MProjects\lab2v10\FixedScheduler.uvproj
+Project File Date:  03/06/2015
 
 <h2>Output:</h2>
-Rebuild target 'FixedScheduler'
-assembling startup.s...
-compiling PLL.c...
-assembling osasm.s...
-compiling ADC.c...
-ADC.c(341): warning:  #550-D: variable "wait" was set but never used
-        int wait;
-ADC.c: 1 warning, 0 errors
-compiling os.c...
-compiling SysTickInts.c...
-compiling UART.c...
-UART.c(616): warning:  #177-D: variable "string" was declared but never referenced
-                char string[20];
-UART.c: 1 warning, 0 errors
-compiling heap.c...
-compiling ST7735.c...
+Build target 'FixedScheduler'
 compiling lab2.c...
-assembling PID_stm32.s...
-assembling cr4_fft_64_stm32.s...
-compiling Timer3A.c...
-compiling Switch.c...
-Switch.c(82): warning:  #550-D: variable "delay" was set but never used
-        int delay;
-Switch.c: 1 warning, 0 errors
-compiling Timer1A.c...
-Timer1A.c(40): warning:  #550-D: variable "delay" was set but never used
-  void Timer1A_Init(uint32_t period){ int delay;
-Timer1A.c: 1 warning, 0 errors
 linking...
-Program Size: Code=10616 RO-data=2052 RW-data=336 ZI-data=9216  
-".\FixedScheduler.axf" - 0 Error(s), 4 Warning(s).
-Load "C:\\Users\\Matt\\Documents\\EE445M\\EE445MProjects\\lab2v10\\FixedScheduler.axf" 
+Program Size: Code=10188 RO-data=2052 RW-data=336 ZI-data=9216  
+".\FixedScheduler.axf" - 0 Error(s), 0 Warning(s).
+Load "E:\\Users\\Matt\\Documents\\GitHub\\EE445MProjects\\lab2v10\\FixedScheduler.axf" 
 Connecting: Mode=JTAG, Speed=1000000Hz
 Erase Done.
 Programming Done.
@@ -46,26 +20,7 @@ Verify OK.
 </pre>
 </body>
 </html>
-.
-Timer1A.c(40): warning:  #550-D: variable "delay" was set but never used
-  void Timer1A_Init(uint32_t period){ int delay;
-Timer1A.c: 1 warning, 0 errors
-".\FixedScheduler.axf" - 1 Error(s), 5 Warning(s).
-Target not created
-\Matt\\Documents\\EE445M\\EE445MProjects\\lab2v10\\FixedScheduler.axf" 
-Connecting: Mode=JTAG, Speed=1000000Hz
-Erase Done.
-Programming Done.
-Verify OK.
--D: variable "character" was declared but never referenced
-  char character;
-UART.c: 12 warnings, 0 errors
-compiling heap.c...
-compiling ST7735.c...
-compiling lab2.c...
-lab2.c(221): warning:  #167-D: argument of type "void (*)(unsigned long)" is incompatible with parameter of type "void (*)(void)"
-    ADC_Collect(5, FS, &Producer); // start ADC sampling, channel 5, PD2, 400 Hz
-lab2.c: 1 warning, 0 errors
+ompiling lab2.c...
 assembling PID_stm32.s...
 assembling cr4_fft_64_stm32.s...
 compiling Timer3A.c...
@@ -77,7 +32,13 @@ compiling Timer1A.c...
 Timer1A.c(40): warning:  #550-D: variable "delay" was set but never used
   void Timer1A_Init(uint32_t period){ int delay;
 Timer1A.c: 1 warning, 0 errors
-compiling FIFO.c...
 linking...
-Program Size: Code=9532 RO-data=2052 RW-data=328 ZI-data=7160  
-".\FixedScheduler.axf" - 0 Error(s), 16 Warning(s).
+.\FixedScheduler.axf: Error: L6218E: Undefined symbol main (referred from rtentry2.o).
+Not enough information to list image symbols.
+Finished: 1 information, 0 warning and 1 error messages.
+".\FixedScheduler.axf" - 1 Error(s), 3 Warning(s).
+Target not created
+Load "E:\\Users\\Matt\\Documents\\GitHub\\EE445MProjects\\lab2v10\\FixedScheduler.axf" 
+_____^
+*** error 56: cannot open file
+Error: Flash Download failed  -  Could not load file 'E:\Users\Matt\Documents\GitHub\EE445MProjects\lab2v10\FixedScheduler.axf'

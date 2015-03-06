@@ -551,10 +551,19 @@ void OS_Sleep(unsigned long sleepTime){
 	//NodePt->Sleep = sleepTime;
 	
 	//1 milliseconds to 1000 micro seconds
+	/*
 	int status = StartCritical();
 	int currentTime = OS_Time();
 	EndCritical(status);
 	NodePt->Sleep = (sleepTime*1000)+currentTime;
+	OS_Suspend();*/
+	
+	
+	//will be done in units of 12.5 ns. the sleep time 1ms * 80000 = x timer ticks or x ns
+	int status = StartCritical();
+	int currentTime = OS_Time();
+	EndCritical(status);
+	NodePt->Sleep = (sleepTime*80000)+currentTime;
 	OS_Suspend();
 } 
 
@@ -564,7 +573,7 @@ int dumpti = 0;
 // ******** OS_Time ************
 // return the system time 
 // Inputs:  none
-// Outputs: RTC in us  										time in 12.5ns units, 0 to 4294967295
+// Outputs: time in 12.5ns units, 0 to 4294967295, meaning each point value is worth 12.5 ns, a timer tick
 // The time resolution should be less than or equal to 1us, and the precision 32 bits
 // It is ok to change the resolution and precision of this function as long as 
 //   this function and OS_TimeDifference have the same resolution and precision 
@@ -572,14 +581,23 @@ unsigned long OS_Time(void){
 	
 	
 	//every tick of the timer is 12.5 ns worth of time, to make 1 ms = 1000000 ns, w
-	
+/*	
 	int status = StartCritical();
 	RTC += rtCounter*OSTIMERTICK + (0.0125 * (TIMER1_TAILR_R-TIMER1_TAV_R));
 	rtCounter=0;
 	EndCritical(status);
-	return RTC;	//SysTick Current Time
+	return RTC;	//SysTick Current Time*/
+	
+	int status = StartCritical();
+	RTC += rtCounter*OSTIMERPERIOD + (TIMER1_TAILR_R-TIMER1_TAV_R);
+	EndCritical(status);
+	return RTC;
 }
 
+unsigned long OS_TimeNano(void){
+	int time = OS_Time();
+	return time*1000;			//there are 1000 nanoseconds in 1 micro second
+}
 
 // ******** OS_TimeDifference ************
 // Calculates difference between two times

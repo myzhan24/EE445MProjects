@@ -174,8 +174,8 @@ int main(void){
     // ADC Init goes here!!
 		ADC_InitTimerTriggerSeq3(0,8000000); //highest frequency of 10000 Hz starting at channel 0
     //OS_AddPeriodicThread(ADCReadPrint, 800000000, 2);
-		//OS_AddPeriodicThread(commandLine,80000000,3);
-		OS_AddPeriodicThread(dummy,80000000,3);
+		OS_AddPeriodicThread(commandLine,80000000,3);
+		//OS_AddPeriodicThread(dummy,80000000,3);
     while(1) {
 				//OS_AddPeriodicThread(UARTCommandLine,8000,3);
     }

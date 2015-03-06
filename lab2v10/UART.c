@@ -76,9 +76,9 @@ void WaitForInterrupt(void);  // low power mode
 AddIndexFifo(Rx, FIFOSIZE, char, FIFOSUCCESS, FIFOFAIL)
 AddIndexFifo(Tx, FIFOSIZE, char, FIFOSUCCESS, FIFOFAIL)
 	
-Sema4Type txFifoLock;
-Sema4Type rxFifoLock;
 
+//Sema4Type RxDataAvailable;
+//Sema4Type TxRoomLeft;
 
 //---------------------OutCRLF---------------------
 // Output a CR,LF to UART to go to a new line
@@ -114,10 +114,13 @@ void UART_Init(void){
   GPIO_PORTA_PCTL_R = (GPIO_PORTA_PCTL_R&0xFFFFFF00)+0x00000011;
   GPIO_PORTA_AMSEL_R = 0;               // disable analog functionality on PA
                                         // UART0=priority 2
-  //NVIC_PRI1_R = (NVIC_PRI1_R&0xFFFF0FFF)|0x00004000; // bits 13-15
-	NVIC_PRI1_R = (NVIC_PRI1_R&0xFFFF0FFF)|0x0000E000; // bits 13-15 priority 7
+  NVIC_PRI1_R = (NVIC_PRI1_R&0xFFFF0FFF)|0x00004000; // bits 13-15
+	//NVIC_PRI1_R = (NVIC_PRI1_R&0xFFFF0FFF)|0x0000E000; // bits 13-15 priority 7
   NVIC_EN0_R |= NVIC_EN0_INT5;           // enable interrupt 5 in NVIC
+	
 
+//	OS_InitSemaphore(&RxDataAvailable, 0);
+//	OS_InitSemaphore(&TxRoomLeft,FIFOSIZE);
 	EndCritical(status);
 }
 
@@ -125,42 +128,60 @@ void UART_Init(void){
 // stop when hardware RX FIFO is empty or software RX FIFO is full
 void static copyHardwareToSoftware(void){
   char letter;
+
   while(((UART0_FR_R&UART_FR_RXFE) == 0) && (RxFifo_Size() < (FIFOSIZE - 1))){
-	//	OS_Wait(&rxFifoLock);//semaphore acquire
+
     letter = UART0_DR_R;
     RxFifo_Put(letter);
-//		OS_Signal(&rxFifoLock);//rx semaphore release
-		//semaphore signal
+//		OS_Signal(&RxDataAvailable);
+
   }
+
 }
 // copy from software TX FIFO to hardware TX FIFO
 // stop when software TX FIFO is empty or hardware TX FIFO is full
 void static copySoftwareToHardware(void){
   char letter;
+
   while(((UART0_FR_R&UART_FR_TXFF) == 0) && (TxFifo_Size() > 0)){
-//		OS_Wait(&txFifoLock);	// tx semaphore wait acquire
+
     TxFifo_Get(&letter);
     UART0_DR_R = letter;
-	//	OS_Signal(&txFifoLock);	//tx semaphore signal release
+		//OS_Signal(&TxRoomLeft);				//notify that the tx software fifo has room
+	
   }
+
 }
 // input ASCII character from UART
 // spin if RxFifo is empty
+//reading what user types
 char UART_InChar(void){
-//	int sr = StartCritical();
+
   char letter;
   while(RxFifo_Get(&letter) == FIFOFAIL){
-		//WaitForInterrupt();
+		//OS_Suspend();
+		// OS_Sleep(5);
 	}
-//	EndCritical(sr);
+
+	
+//	OS_Wait(&RxDataAvailable);	//wait until RxFifo_Put has been called
+
+	//RxFifo_Get(&letter);
+
   return(letter);
 }
 // output ASCII character to UART
 // spin if TxFifo is full
 void UART_OutChar(char data){
-  while(TxFifo_Put(data) == FIFOFAIL){
-		//WaitForInterrupt();
-	}
+
+	 while(TxFifo_Put(data) == FIFOFAIL){
+	 //OS_Sleep(5);
+	 //OS_Suspend();
+	 }
+	//OS_Wait(&TxRoomLeft);		//wait until the software fifo has room to store
+
+	//TxFifo_Put(data);				//put another element in the fifo
+
   UART0_IM_R &= ~UART_IM_TXIM;          // disable TX FIFO interrupt
   copySoftwareToHardware();
   UART0_IM_R |= UART_IM_TXIM;           // enable TX FIFO interrupt
@@ -172,6 +193,7 @@ void UART_OutChar(char data){
 // hardware RX FIFO goes from 1 to 2 or more items
 // UART receiver has timed out
 void UART0_Handler(void){
+	//DisableInterrupts();
   if(UART0_RIS_R&UART_RIS_TXRIS){       // hardware TX FIFO <= 2 items
     UART0_ICR_R = UART_ICR_TXIC;        // acknowledge TX FIFO
     // copy from software TX FIFO to hardware TX FIFO
@@ -190,6 +212,7 @@ void UART0_Handler(void){
     // copy from hardware RX FIFO to software RX FIFO
     copyHardwareToSoftware();
   }
+	//EnableInterrupts();
 }
 
 //------------UART_OutString------------
@@ -389,26 +412,7 @@ void serviceCommand(char *bufPt) {
 	volatile int line;
 	char first[]={'A','D','C',' ','0',':',' ',0};
 	volatile int adcval;
-	if(strcmp(bufPt,"adcopen")==0)
-	{
-		UART_OutString("Enter ADC port: ");
-		n=UART_InUDec();
-		OutCRLF();
-		if(n>-1 && n<12)
-		{
-			ADC_Open(n);
-			UART_OutString("Switched to ADC Port: "); UART_OutUDec(n);
-			OutCRLF();
-			OutCRLF();
-		}
-		else
-		{
-			UART_OutString("Invalid ADC Port: "); UART_OutUDec(n);
-			OutCRLF();
-			OutCRLF();
-		}
-	}
-	else if(strcmp(bufPt,"derp")==0){
+	if(strcmp(bufPt,"derp")==0){
 		UART_OutString("HEEEEEY");
 		OutCRLF();
 	}
