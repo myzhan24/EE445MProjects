@@ -72,8 +72,7 @@ volatile int numThreads=0;
 //volatile int *killSwitch;
 int SysTickPeriod = 0;
 volatile int periodicInterruptCount;
-volatile int rtCounter;				// real time clock counter to keep track of the number of timer interrupts 
-volatile int RTC;							// real time clock value in MS
+
 	
 // Mailbox semaphores
 Sema4Type DataValid;    //0 == mailbox empty
@@ -87,7 +86,8 @@ Sema4Type DataAvailable;
 Sema4Type DataRoomLeft;
 Sema4Type FifoAvailable;
 
-
+volatile int RTC;
+volatile int rtCounter;
 
 void DisableInterrupts(void); // Disable interrupts
 void EnableInterrupts(void);  // Enable interrupts
@@ -125,7 +125,8 @@ void ColorSwap(){
 void OS_Init(void){
 		DisableInterrupts();
 		periodicInterruptCount = 0;
-
+		RTC = 0;
+		rtCounter=0;
     // code below taken from PeriodicSysTickInts.c
     PLL_Init();                 // bus clock at 80 MHz
 		//ST7735_InitR(INITR_REDTAB);
@@ -246,12 +247,10 @@ void OS_Suspend(void){
 // Output: ??
 int OS_AddPeriodicThread(void (*task) (void), unsigned long period, unsigned long priority){
   //int status = StartCritical();
-	DisableInterrupts();
 	//Timer3A_Init((50000000/16)); 
 	//Timer3A_Init(period);
 	Timer3A_Init(task,period);
 	//EndCritical(status);
-	EnableInterrupts();
 	return 1;
 
 }
@@ -284,14 +283,6 @@ int OS_AddSW1Task(void(*task)(void), unsigned long priority){
 	return 1;
 }
 
-// ******** OS_ClearMsTime ************
-// sets the system time to zero (from Lab 1)
-// Inputs:  none
-// Outputs: none
-// You are free to change how this works
-void OS_ClearMsTime(void){
-	RTC=0;
-}
 
 // ******** OS_Fifo_Get ************
 // Remove one data sample from the Fifo
@@ -337,6 +328,9 @@ int OS_Fifo_Put(unsigned long data){
     int value;
 //    OS_bWait(&FifoAvailable);
     value = TmailFifo_Put(data);
+		if (value == 1) {
+			OS_Signal(&DataAvailable);
+		}
 //    OS_bSignal(&FifoAvailable);
     return value;
 }
@@ -439,20 +433,6 @@ unsigned long OS_MailBox_Recv(void){
     return data;
 }
 
-// ******** OS_MsTime ************
-// reads the current time in msec (from Lab 1)
-// Inputs:  none
-// Outputs: time in ms units
-// You are free to select the time resolution for this function
-// It is ok to make the resolution to match the first call to OS_AddPeriodicThread
-unsigned long OS_MsTime(void){
-	int ticks;
-	int sr = StartCritical();
-	ticks = OS_Time();
-	EndCritical(sr);
-	return ticks*80000;
-}
- 
  // ******** OS_Signal ************
 // increment semaphore 
 // Lab2 spinlock
@@ -503,6 +483,7 @@ void OS_bSignal(Sema4Type *semaPt){
 // Lab3 block if less than zero
 // input:  pointer to a binary semaphore
 // output: none
+/*
 void OS_bWait(Sema4Type *semaPt){
 	DisableInterrupts();
 	while(semaPt->Value <= 0){
@@ -512,6 +493,18 @@ void OS_bWait(Sema4Type *semaPt){
 	}
 	semaPt->Value=0;
 	EnableInterrupts();
+}
+*/
+void OS_bWait(Sema4Type *semaPt){
+	int sr;
+	sr = StartCritical();
+	while(semaPt->Value <= 0){
+		EndCritical(sr);
+		OS_Suspend();
+		sr = StartCritical();
+	}
+	semaPt->Value=0;
+	EndCritical(sr);
 }
 
 int OS_SleepCheck(NodeType* node) {
@@ -589,7 +582,8 @@ unsigned long OS_Time(void){
 	return RTC;	//SysTick Current Time*/
 	
 	int status = StartCritical();
-	RTC += rtCounter*OSTIMERPERIOD + (TIMER1_TAILR_R-TIMER1_TAV_R);
+	//RTC += rtCounter*OSTIMERPERIOD + (TIMER1_TAILR_R-TIMER1_TAR_R);
+	RTC = TIMER1_TAILR_R - TIMER1_TAR_R;
 	EndCritical(status);
 	return RTC;
 }
@@ -599,6 +593,29 @@ unsigned long OS_TimeNano(void){
 	return time*1000;			//there are 1000 nanoseconds in 1 micro second
 }
 
+// ******** OS_ClearMsTime ************
+// sets the system time to zero (from Lab 1)
+// Inputs:  none
+// Outputs: none
+// You are free to change how this works
+void OS_ClearMsTime(void) {
+	//TIMER1_TAILR_R = OSTIMERPERIOD;    // 4) reload value. set to max value
+	TIMER1_TAV_R = TIMER1_TAILR_R;
+	RTC = 0;
+}
+
+// ******** OS_MsTime ************
+// reads the current time in msec (from Lab 1)
+// Inputs:  none
+// Outputs: time in ms units
+// You are free to select the time resolution for this function
+// It is ok to make the resolutio to match the first call to OS_AddPeriodicThread
+unsigned long OS_MsTime(void) {
+	unsigned long raw_time = OS_Time()*(0.0000125);
+	return raw_time;
+}
+
+
 // ******** OS_TimeDifference ************
 // Calculates difference between two times
 // Inputs:  two times measured with OS_Time
@@ -607,9 +624,9 @@ unsigned long OS_TimeNano(void){
 // It is ok to change the resolution and precision of this function as long as 
 //   this function and OS_Time have the same resolution and precision 
 unsigned long OS_TimeDifference(unsigned long start, unsigned long stop){
-	signed long diff = start - stop;
-	if(diff<0)
-		return (-1*diff);		//if this happens, and entire reload occurred. stop should always be lower than start
+	unsigned long diff = stop - start;
+	if(stop < start)
+		diff = TIMER1_TAILR_R - start + stop;
 	
 	return diff;
 }

@@ -1,0 +1,60 @@
+<html>
+<body>
+<pre>
+<h1>µVision Build Log</h1>
+<h2>Project:</h2>
+E:\Users\Matt\Documents\GitHub\EE445MProjects\lab2v13\UARTInts.uvproj
+Project File Date:  03/09/2015
+
+<h2>Output:</h2>
+Build target 'UARTInts'
+assembling osasm.s...
+linking...
+Program Size: Code=10916 RO-data=2052 RW-data=340 ZI-data=10604  
+".\UARTInts.axf" - 0 Error(s), 0 Warning(s).
+Load "E:\\Users\\Matt\\Documents\\GitHub\\EE445MProjects\\lab2v13\\UARTInts.axf" 
+Connecting: Mode=JTAG, Speed=1000000Hz
+Erase Done.
+Programming Done.
+Verify OK.
+</pre>
+</body>
+</html>
+3 warnings, 0 errors
+linking...
+Program Size: Code=10936 RO-data=2052 RW-data=340 ZI-data=10604  
+".\UARTInts.axf" - 0 Error(s), 3 Warning(s).
+void promptNumber(void);
+Lab2.c(249): warning:  #550-D: variable "oldData" was set but never used
+                unsigned long oldData;
+Lab2.c(313): warning:  #177-D: variable "i" was declared but never referenced
+        int i = 0;
+Lab2.c: 3 warnings, 0 errors
+compiling os.c...
+UART.h(119): warning:  #1-D: last line of file ends without a newline
+  void promptNumber(void);
+os.c(462): warning:  #177-D: variable "status" was declared but never referenced
+        int status;
+os.c(494): warning:  #177-D: variable "status" was declared but never referenced
+        long status;
+os.c: 3 warnings, 0 errors
+compiling ST7735.c...
+ST7735.c(1626): warning:  #177-D: variable "sr" was declared but never referenced
+        int sr;
+ST7735.c: 1 warning, 0 errors
+compiling Switch.c...
+Switch.c(83): warning:  #550-D: variable "delay" was set but never used
+        int delay;
+Switch.c: 1 warning, 0 errors
+compiling SysTickInts.c...
+compiling Timer1A.c...
+Timer1A.c(42): warning:  #550-D: variable "delay" was set but never used
+  void Timer1A_Init(uint32_t period){ int delay;
+Timer1A.c: 1 warning, 0 errors
+compiling Timer3A.c...
+assembling cr4_fft_64_stm32.s...
+assembling osasm.s...
+assembling PID_stm32.s...
+linking...
+Program Size: Code=5168 RO-data=2052 RW-data=340 ZI-data=9348  
+".\UARTInts.axf" - 0 Error(s), 11 Warning(s).

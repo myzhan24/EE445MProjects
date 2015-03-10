@@ -53,6 +53,17 @@ struct TCB{
 };
 typedef struct TCB TCBType;
 
+/*
+struct Time{
+  uint32_t time;
+	uint32_t revolution;
+};
+typedef struct Time Timer;
+
+Timer *RTC;
+*/
+
+
 
 struct Node{
   struct Node *Next;        // circular linked list

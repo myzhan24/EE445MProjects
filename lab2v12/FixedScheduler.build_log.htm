@@ -1,0 +1,59 @@
+<html>
+<body>
+<pre>
+<h1>µVision Build Log</h1>
+<h2>Project:</h2>
+E:\Users\Matt\Documents\GitHub\EE445MProjects\lab2v12\FixedScheduler.uvproj
+Project File Date:  03/06/2015
+
+<h2>Output:</h2>
+Build target 'FixedScheduler'
+compiling lab2.c...
+lab2.c(361): warning:  #177-D: variable "i" was declared but never referenced
+        int i=0;
+lab2.c: 1 warning, 0 errors
+linking...
+Program Size: Code=3668 RO-data=32 RW-data=152 ZI-data=7152  
+".\FixedScheduler.axf" - 0 Error(s), 1 Warning(s).
+Load "E:\\Users\\Matt\\Documents\\GitHub\\EE445MProjects\\lab2v12\\FixedScheduler.axf" 
+Connecting: Mode=JTAG, Speed=1000000Hz
+Erase Done.
+Programming Done.
+Verify OK.
+</pre>
+</body>
+</html>
+177-D: variable "sr" was declared but never referenced
+        int sr;
+os.c: 3 warnings, 0 errors
+compiling SysTickInts.c...
+compiling UART.c...
+compiling heap.c...
+compiling ST7735.c...
+compiling lab2.c...
+lab2.c(361): warning:  #177-D: variable "i" was declared but never referenced
+        int i=0;
+lab2.c: 1 warning, 0 errors
+assembling PID_stm32.s...
+assembling cr4_fft_64_stm32.s...
+compiling Timer3A.c...
+compiling Switch.c...
+Switch.c(83): warning:  #550-D: variable "delay" was set but never used
+        int delay;
+Switch.c: 1 warning, 0 errors
+compiling Timer1A.c...
+Timer1A.c(42): warning:  #550-D: variable "delay" was set but never used
+  void Timer1A_Init(uint32_t period){ int delay;
+Timer1A.c: 1 warning, 0 errors
+linking...
+.\FixedScheduler.axf: Error: L6218E: Undefined symbol OutCRLF (referred from lab2.o).
+Not enough information to list image symbols.
+Finished: 1 information, 0 warning and 1 error messages.
+".\FixedScheduler.axf" - 1 Error(s), 7 Warning(s).
+Target not created
+Load "E:\\Users\\Matt\\Documents\\GitHub\\EE445MProjects\\lab2v12\\FixedScheduler.axf" 
+_____^
+*** error 56: cannot open file
+Error: Flash Download failed  -  Could not load file 'E:\Users\Matt\Documents\GitHub\EE445MProjects\lab2v12\FixedScheduler.axf'
+ error 56: cannot open file
+Error: Flash Download failed  -  Could not load file 'E:\Users\Matt\Documents\GitHub\EE445MProjects\lab2v12\FixedScheduler.axf'

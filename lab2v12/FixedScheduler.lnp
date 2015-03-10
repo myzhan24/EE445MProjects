@@ -1,0 +1,19 @@
+--cpu Cortex-M4
+".\startup.o"
+".\pll.o"
+".\osasm.o"
+".\adc.o"
+".\os.o"
+".\systickints.o"
+".\uart.o"
+".\heap.o"
+".\st7735.o"
+".\lab2.o"
+".\pid_stm32.o"
+".\cr4_fft_64_stm32.o"
+".\timer3a.o"
+".\switch.o"
+".\timer1a.o"
+--ro-base 0x00000000 --entry 0x00000000 --rw-base 0x20000000 --entry Reset_Handler --first __Vectors --strict --summary_stderr --info summarysizes --map --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list ".\FixedScheduler.map" -o .\FixedScheduler.axf

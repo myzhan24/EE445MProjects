@@ -115,13 +115,14 @@ void DAS(void){
 unsigned long input;  
 unsigned static long LastTime;  // time at previous ADC sample
 unsigned long thisTime;         // time at current ADC sample
-long jitter;                    // time between measured and expected, in us
+unsigned long jitter;                    // time between measured and expected, in us
   if(NumSamples < RUNLENGTH){   // finite time run
     PE0 ^= 0x01;
-    input = ADC_In();           // channel set when calling ADC_Init
+    //input = ADC_In();           // channel set when calling ADC_Init
+		input=2;
     PE0 ^= 0x01;
-    thisTime = OS_Time();       // current time, 12.5 ns
-    DASoutput = Filter(input);
+		DASoutput = Filter(input);
+		thisTime = OS_Time();       // current time, 12.5 ns
     FilterWork++;        // calculation finished
     if(FilterWork>1){    // ignore timing of first interrupt
       unsigned long diff = OS_TimeDifference(LastTime,thisTime);
@@ -257,14 +258,20 @@ unsigned long myId = OS_Id();
 
 
 void Display(void){ 
+	unsigned long oldData;
 unsigned long data,voltage;
   ST7735_Message(0,1,"Run length = ",(RUNLENGTH)/FS);   // top half used for Display
   while(NumSamples < RUNLENGTH) { 
     data = OS_MailBox_Recv();
     voltage = 3000*data/4095;               // calibrate your device so voltage is in mV
     PE3 = 0x08;
+		//Output_Clear();
+		if(oldData > 99 &&oldData > data && data <100)
+				ST7735_Message(0,2,"                                   ",voltage);
+		
     ST7735_Message(0,2,"v(mV) =",voltage);  
     PE3 = 0x00;
+		oldData=data;
   } 
   OS_Kill();  // done
 } 
@@ -394,7 +401,7 @@ int adctestmain(void){
 }
 
 //*******************final main DEMONTRATE THIS TO TA**********
-int main(void){ 
+int finalmain(void){ 
   OS_Init();           // initialize, disable interrupts
   PortE_Init();
   DataLost = 0;        // lost data between producer and consumer
@@ -631,7 +638,7 @@ void BackgroundThread5c(void){   // called when Select button pushed
 	int what = OS_AddThread(&Thread4c,128,3); 
 }
       
-int testmain3(void){   // Testmain3
+int main(void){   // Testmain3
   Count4 = 0;          
   OS_Init();           // initialize, disable interrupts
 	PortF_Init();

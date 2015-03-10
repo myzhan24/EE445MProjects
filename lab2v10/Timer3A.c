@@ -40,6 +40,7 @@ void (*PeriodicTask)(void);   // user function
 //          period in units (1/clockfreq)
 // Outputs: none
 void Timer3A_Init(void(*task)(void), unsigned long period){
+	long status = StartCritical();
   SYSCTL_RCGCTIMER_R |= 0x08;   // 0) activate TIMER3
   PeriodicTask = task;          // user function
   TIMER3_CTL_R = 0x00000000;    // 1) disable TIMER3A during setup
@@ -49,11 +50,13 @@ void Timer3A_Init(void(*task)(void), unsigned long period){
   TIMER3_TAPR_R = 0;            // 5) bus clock resolution
   TIMER3_ICR_R = 0x00000001;    // 6) clear TIMER3A timeout flag
   TIMER3_IMR_R = 0x00000001;    // 7) arm timeout interrupt
-  NVIC_PRI8_R = (NVIC_PRI8_R&0x0FFFFFFF)|0x80000000; // 8) priority 4
+ // NVIC_PRI8_R = (NVIC_PRI8_R&0x0FFFFFFF)|0x20000000; // 8) priority 1
+	NVIC_PRI8_R = (NVIC_PRI8_R&0x0FFFFFFF)|0x00000000; // 8) priority 0
 // interrupts enabled in the main program after all devices initialized
 // vector number 51, interrupt number 35
   NVIC_EN1_R |= 1<<(35-32);      // 9) enable IRQ 35 in NVIC
   TIMER3_CTL_R = 0x00000001;    // 10) enable TIMER3A
+	EndCritical(status);
 }
 
 void Timer3A_Handler(void){

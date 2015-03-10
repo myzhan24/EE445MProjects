@@ -52,6 +52,7 @@ void Timer1A_Init(uint32_t period){ int delay;
 // interrupts enabled in the main program after all devices initialized
 // vector number 51, interrupt number 35
   NVIC_EN0_R |= 1<<21;      // 9) IRQ 21 = TIMER1A Interrupt Enable
+	TIMER1_CTL_R = 0x00000200;    // 10) enable timer1A
   TIMER1_CTL_R = 0x00000001;    // 10) enable timer1A
 }
 

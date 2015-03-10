@@ -69,7 +69,7 @@ void EnableInterrupts(void);  // Enable interrupts
 long StartCritical (void);    // previous I bit, disable interrupts
 void EndCritical(long sr);    // restore I bit to previous value
 void WaitForInterrupt(void);  // low power mode
-void Producer(unsigned long data);
+void (*adcTask)(unsigned long);
 
 // There are many choices to make when using the ADC, and many
 // different combinations of settings will all do basically the
@@ -267,7 +267,7 @@ void ADC_Init(uint8_t channelNum) {
 	ADC0_PC_R = 0x01;         // configure for MAX 125K samples/sec
 	ADC0_SSPRI_R = 0x3210;    // sequencer 0 is highest, sequencer 3 is lowest
 	ADC0_ACTSS_R &= ~0x08;    // disable sample sequencer 3
-	ADC0_EMUX_R = (ADC0_EMUX_R&0xFFFF0FFF)+0x5000; // timer trigger event
+	ADC0_EMUX_R = (ADC0_EMUX_R&0xFFFF0FFF)+0x0000; // SSI
 	ADC0_SSMUX3_R = channelNum;
 	ADC0_SSCTL3_R = 0x06;          // set flag and end                       
 	ADC0_IM_R |= 0x08;             // enable SS3 interrupts
@@ -339,24 +339,25 @@ int8_t ADC_Open(uint8_t channelNum){
 	return -1;
 }
 
+
 volatile uint32_t ADCvalue;
 void ADC0Seq3_Handler(void){	// timer generates conversion
-	ADC0_ISC_R = 0x08;          // acknowledge ADC sequence 3 completion
+	ADC0_ISC_R |= 0x08;          // acknowledge ADC sequence 3 completion
   ADCvalue = ADC0_SSFIFO3_R;  // 12-bit result
+	//Producer(ADCvalue);
 	//collectDone = 1;
 }
 
-
-//for lab 2
-/*
-void ADC0Seq3_Handler(void){	// timer generates conversion
-  ADC0_ISC_R = 0x08;          // acknowledge ADC sequence 3 completion
-  Producer(ADC0_SSFIFO3_R);  // 12-bit result
+void ADC0Seq2_Handler(void){
+	ADC0_ISC_R |= 0x04;
+	unsigned long value = ADC0_SSFIFO2_R;
+	adcTask(value);
 }
-*/
 
 uint32_t ADC_In(){
-	while((ADC0_RIS_R & 0x08)==8) {};	// wait for conversion done
+	ADC0_PSSI_R |= 0x8;
+//	while((ADC0_RIS_R & 0x08)==8) {};	// wait for conversion done
+		while((ADC0_RIS_R & 0x08)==0) {};	// wait for conversion done
 	//while(!collectDone){};
 	//collectDone = 0;
 	return ADCvalue;
@@ -374,48 +375,21 @@ uint32_t ADC_CurrentFrequency(){
 	return samplingFrequency;
 }
 
-//
-//
-/*
-int ADC_Collect(unsigned int channelNum, unsigned int fs, unsigned short buffer[], unsigned int numberOfSamples){
-	volatile int i;
-	int sr = StartCritical();
-	if(ADC_CurrentChannel()!=channelNum)
-			ADC_Open(channelNum);
-	
-	ADC_ChangeSampleRateHz(fs);
-	
-	EndCritical(sr);
-	
-	i = 0;
-	while(i<numberOfSamples){
-		buffer[i] = ADC_In();
-		i++;
-	}
-	
-	collectDone = 1;
-	return 0;
-}
-
-int ADC_Status(){
-	int sr = StartCritical();
-	int temp = collectDone;
-	collectDone = 0;
-	EndCritical(sr);
-	return temp;
-}
-*/
 
 
 void ADC_Collect(uint8_t channelNum, uint32_t FS, void (*task)(unsigned long)){
 	uint32_t temp=0;
 	
 	int sr = StartCritical();
+	
+	/*
 	if(ADC0_SSMUX3_R!=channelNum)
 			ADC_Open(channelNum);
 	
 	if(samplingFrequency!=FS)
 			ADC_ChangeSampleRateHz(FS);
+	
+	NVIC_EN0_R |= 1<<17;              // enable interrupt 17 in NVIC
 	
 	EndCritical(sr);
 	
@@ -423,6 +397,35 @@ void ADC_Collect(uint8_t channelNum, uint32_t FS, void (*task)(unsigned long)){
 		temp = ADCvalue;
 		
 	task(temp);
+	*/
+	/*
+	SYSCTL_RCGCTIMER_R |= 0x04;   // activate timer2 
+	long delay = SYSCTL_RCGCTIMER_R;   // allow time to finish activating
+	TIMER2_CTL_R = 0x00000000;    // disable timer0A during setup
+	TIMER2_CTL_R |= 0x00000020;   // enable timer0A trigger to ADC
+	TIMER2_CFG_R = 0;             // configure for 32-bit timer mode
+	TIMER2_TAMR_R = 0x00000002;   // configure for periodic mode, default down-count settings
+	TIMER2_TAPR_R = 0;            // prescale value for trigger
+	TIMER2_TAILR_R = FS-1;    // start value for trigger
+	TIMER2_IMR_R = 0x00000000;    // disable all interrupts
+	TIMER2_CTL_R |= 0x000000011;   // enable timer2A 32-b, periodic, no interrupts
+	*/
+	
+		if(samplingFrequency!=FS)
+			ADC_ChangeSampleRateHz(FS);
+	
+	ADC0_ACTSS_R &= ~0x04;    // disable sample sequencer 2
+	ADC0_EMUX_R = (ADC0_EMUX_R&0xFFFFF0FF)+0x500; // timer trigger event
+	ADC0_SSMUX2_R = channelNum;
+	ADC0_SSCTL2_R = 0x06;          // set flag and end                       
+	ADC0_IM_R |= 0x04;             // enable SS2 interrupts
+	ADC0_ACTSS_R |= 0x04;          // enable sample sequencer 2
+	NVIC_PRI4_R = (NVIC_PRI4_R&0xFFFFFF00)|0x00000020; //priority 1
+	NVIC_EN0_R |= 1<<16;              // enable interrupt 16 in NVIC
+		
+	adcTask = task;	
+		
+	EndCritical(sr);
 	
 	//collectDone = 1;
 }

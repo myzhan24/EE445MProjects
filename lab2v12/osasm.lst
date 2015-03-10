@@ -1,0 +1,708 @@
+
+
+
+ARM Macro Assembler    Page 1 
+
+
+    1 00000000         ;/******************************************************
+                       ***********************/
+    2 00000000         ;/* OSasm.s: low-level OS commands, written in assembly 
+                                             */
+    3 00000000         ;/* derived from uCOS-II                                
+                                             */
+    4 00000000         ;/******************************************************
+                       ***********************/
+    5 00000000         ;Jonathan Valvano, Fixed Scheduler, 8/10/14
+    6 00000000         
+    7 00000000         
+    8 00000000                 AREA             |.text|, CODE, READONLY, ALIGN=
+2
+    9 00000000                 THUMB
+   10 00000000                 REQUIRE8
+   11 00000000                 PRESERVE8
+   12 00000000         
+   13 00000000                 EXTERN           RunPt       ; currently running
+                                                             thread
+   14 00000000                 EXTERN           NodePt      ; linked list of tr
+                                                            eads to run
+   15 00000000                 EXTERN           OS_SleepCheck ;
+   16 00000000                 EXTERN           OS_SleepClear
+   17 00000000                 EXTERN           OS_RemoveCurrentThread ;removes
+                                                             the thread from th
+                                                            e tcb linked list
+   18 00000000         ;EXTERN killSwitch  ; PendSV skip saving the conteext?
+   19 00000000         ;EXTERN  SNodePt
+   20 00000000         ;EXTERN PeriodicNode
+   21 00000000         ;EXTERN  sys
+   22 00000000                 EXPORT           OS_Launch
+   23 00000000                 EXPORT           SysTick_Handler
+   24 00000000                 EXPORT           PendSV_Handler
+   25 00000000         ;EXPORT  Timer0A_Handler
+   26 00000000         
+   27 00000000 40030024 
+                       TIMER0_ICR_R
+                               EQU              0x40030024
+   28 00000000 00000001 
+                       TIMER_ICR_TATOCINT
+                               EQU              0x00000001  ; GPTM TimerA Time-
+                                                            Out Raw
+   29 00000000 E000ED04 
+                       NVIC_INT_CTRL
+                               EQU              0xE000ED04  ; Interrupt control
+                                                             state register.
+   30 00000000 E000ED22 
+                       NVIC_SYSPRI14
+                               EQU              0xE000ED22  ; PendSV priority r
+                                                            egister (position 1
+                                                            4).
+   31 00000000 E000ED23 
+                       NVIC_SYSPRI15
+                               EQU              0xE000ED23  ; Systick priority 
+                                                            register (position 
+                                                            15).
+   32 00000000 000000EF 
+                       NVIC_LEVEL14
+                               EQU              0xEF        ; Systick priority 
+
+
+
+ARM Macro Assembler    Page 2 
+
+
+                                                            value (second lowes
+                                                            t).
+   33 00000000 000000FF 
+                       NVIC_LEVEL15
+                               EQU              0xFF        ; PendSV priority v
+                                                            alue (lowest).
+   34 00000000 10000000 
+                       NVIC_PENDSVSET
+                               EQU              0x10000000  ; Value to trigger 
+                                                            PendSV exception.
+   35 00000000 E000E014 
+                       NVIC_ST_RELOAD
+                               EQU              0xE000E014
+   36 00000000 E000E018 
+                       NVIC_ST_CURRENT
+                               EQU              0xE000E018
+   37 00000000         
+   38 00000000         
+   39 00000000 4770            BX               LR          ; yes – we successf
+                                                            ully incremented it
+                                                            
+   40 00000002         
+   41 00000002         
+   42 00000002         OS_Launch
+   43 00000002 4947            LDR              R1, =NVIC_ST_RELOAD
+   44 00000004 F1A0 0001       SUB              R0, R0, #1
+   45 00000008 6008            STR              R0, [R1]
+   46 0000000A 4846            LDR              R0, =RunPt  ; currently running
+                                                             thread
+   47 0000000C 6802            LDR              R2, [R0]    ; R2 = value of Run
+                                                            Pt
+   48 0000000E F8D2 D000       LDR              SP, [R2]    ; new thread SP; SP
+                                                             = RunPt->stackPoin
+                                                            ter;
+   49 00000012 E8BD 0FF0       POP              {R4-R11}    ; restore regs r4-1
+                                                            1 
+   50 00000016 BC0F            POP              {R0-R3}     ; restore regs r0-3
+                                                             
+   51 00000018 F85D CB04       POP              {R12}
+   52 0000001C F85D EB04       POP              {LR}        ; discard LR from i
+                                                            nitial stack
+   53 00000020 F85D EB04       POP              {LR}        ; start location
+   54 00000024 BC02            POP              {R1}        ; discard PSR
+   55 00000026 B662            CPSIE            I           ; Enable interrupts
+                                                             at processor level
+                                                            
+   56 00000028 4770            BX               LR          ; start first threa
+                                                            d
+   57 0000002A         
+   58 0000002A         OSStartHang
+   59 0000002A E7FE            B                OSStartHang ; Should never get 
+                                                            here
+   60 0000002C         
+   61 0000002C         
+   62 0000002C         
+   63 0000002C         ;*******************************************************
+                       *************************************************
+   64 0000002C         
+   65 0000002C         
+
+
+
+ARM Macro Assembler    Page 3 
+
+
+   66 0000002C         SysTick_Handler
+   67 0000002C B672            CPSID            I           ; Prevent interrupt
+                                                            ion during context 
+                                                            switch
+   68 0000002E         
+   69 0000002E         
+   70 0000002E         ;1) check marked for deletion
+   71 0000002E 483D            LDR              R0, =RunPt
+   72 00000030 6801            LDR              R1, [R0]    ;Run Pt val
+   73 00000032 684A            LDR              R2, [R1,#4] ;RunPt->kill
+   74 00000034 3200            ADDS             R2, #0      ;set cc
+   75 00000036 D00E            BEQ              sh_SaveContext ;0: alive, 1: de
+                                                            lete
+   76 00000038         
+   77 00000038         ;1) delete thread, do not save context
+   78 00000038         sh_DeleteLoop
+   79 00000038 B500            PUSH             {LR}
+   80 0000003A F7FF FFFE       BL               OS_RemoveCurrentThread ;NodePt 
+                                                            = NodePt->Prev
+   81 0000003E F85D EB04       POP              {LR}
+   82 00000042 4838            LDR              R0, =RunPt  ;RuntPt = RunPt->Pr
+                                                            ev
+   83 00000044 6800            LDR              R0, [R0]    ;Old thread was fre
+                                                            ed
+   84 00000046 F8D0 D000       LDR              SP, [R0]    ;Update Stack Point
+                                                            er to RunPt->Prev->
+                                                            SP
+   85 0000004A         
+   86 0000004A         ;1) check marked for deletion again
+   87 0000004A 4836            LDR              R0, =RunPt
+   88 0000004C 6801            LDR              R1, [R0]    ;Run Pt val
+   89 0000004E 684A            LDR              R2, [R1,#4] ;RunPt->kill
+   90 00000050 3200            ADDS             R2, #0      ;set cc
+   91 00000052         
+   92 00000052 D006            BEQ              sh_SleepCheckLoop ;0: alive, 1:
+                                                             delete.
+   93 00000054 E7F0            B                sh_DeleteLoop ;kill = 1,  Loop 
+                                                            again, needs deleti
+                                                            on
+   94 00000056         
+   95 00000056         
+   96 00000056         ;1) alive thread, save context
+   97 00000056         sh_SaveContext
+   98 00000056 E92D 0FF0       PUSH             {R4-R11}    ; Save remaining re
+                                                            gs r4-11
+   99 0000005A 4832            LDR              R0, =RunPt  ; R0=pointer to Run
+                                                            Pt, old thread
+  100 0000005C 6801            LDR              R1, [R0]    ; RunPt->stackPoint
+                                                            er = SP;
+  101 0000005E F8C1 D000       STR              SP, [R1]    ; save SP of proces
+                                                            s being switched ou
+                                                            t
+  102 00000062         
+  103 00000062         ;sh_NoSaveContext
+  104 00000062         ;2) Find the Next Thread that is not sleeping
+  105 00000062         sh_SleepCheckLoop
+  106 00000062 4830            LDR              R0, =RunPt  ; R0=pointer to Run
+                                                            Pt, current thread
+  107 00000064 4930            LDR              R1, =NodePt
+
+
+
+ARM Macro Assembler    Page 4 
+
+
+  108 00000066 680A            LDR              R2, [R1]    ; R2=NodePt
+  109 00000068 6812            LDR              R2, [R2]    ; R2=NodePt->Next
+  110 0000006A         
+  111 0000006A 600A            STR              R2, [R1]    ; NodePt = NodePt->
+                                                            Next;
+  112 0000006C 6853            LDR              R3, [R2,#4] ; R3= NodePt->Next-
+                                                            >Thread;// which th
+                                                            read
+  113 0000006E 6003            STR              R3, [R0]    ; RunPt = NodePt->N
+                                                            ext->ThreadPt
+  114 00000070         
+  115 00000070 B500            PUSH{LR}                     ;save LR
+  116 00000072 482D            LDR              R0, =NodePt
+  117 00000074 6800            LDR              R0,[R0]
+  118 00000076 F7FF FFFE       BL               OS_SleepCheck ;Check if sleep >
+                                                             OS_Time
+  119 0000007A F85D EB04       POP{LR}
+  120 0000007E 3000            ADDS             R0,#0       ; -1 still sleeping
+                                                            
+  121 00000080         
+  122 00000080 D4EF            BMI              sh_SleepCheckLoop ;  Negative =
+                                                             still sleeping so 
+                                                            load next TCB
+  123 00000082 D004            BEQ              sh_SkipSleepClear ;  0: OS Slee
+                                                            p was 0, skip updat
+                                                            ing the sleep
+  124 00000084 B500            PUSH{LR}
+  125 00000086 4828            LDR              R0, =NodePt
+  126 00000088 6800            LDR              R0,[R0]
+  127 0000008A         ;BL  OS_SleepClear  ; Set NodePt->Sleep to 0, it is awak
+                       e
+  128 0000008A F85D EB04       POP{LR}
+  129 0000008E         
+  130 0000008E         sh_SkipSleepClear
+  131 0000008E         ;3) clear SYSTICK CURRENT
+  132 0000008E         ; LDR  R2, [R1]     ;
+  133 0000008E         ;    LDR     R2, [R2,#8]     ; NodePt->TimeSlice
+  134 0000008E         ;    SUB     R2, #50            ; subtract off time to r
+                       un this ISR
+  135 0000008E         ;    LDR     R1, =NVIC_ST_RELOAD
+  136 0000008E         ; STR     R2, [R1]           ; how long to run next thre
+                       ad
+  137 0000008E 4927            LDR              R1, =NVIC_ST_CURRENT
+  138 00000090 F04F 0214       MOV              R2, #20
+  139 00000094 600A            STR              R2, [R1]    ; write to current,
+                                                             clears it
+  140 00000096         
+  141 00000096         ;4) load context of next thread
+  142 00000096 4923            LDR              R1, =RunPt
+  143 00000098 680B            LDR              R3, [R1]    ; R3 = RunPt Val
+  144 0000009A F8D3 D000       LDR              SP, [R3]    ; new thread SP; SP
+                                                             = RunPt->stackPoin
+                                                            ter;
+  145 0000009E         
+  146 0000009E E8BD 0FF0       POP              {R4-R11}    ; restore regs r4-1
+                                                            1 
+  147 000000A2         
+  148 000000A2 B662            CPSIE            I           ; tasks run with I=
+                                                            0
+
+
+
+ARM Macro Assembler    Page 5 
+
+
+  149 000000A4 4770            BX               LR          ; Exception return 
+                                                            will restore remain
+                                                            ing context   
+  150 000000A6         
+  151 000000A6         
+  152 000000A6         
+  153 000000A6         
+  154 000000A6         
+  155 000000A6         
+  156 000000A6         
+  157 000000A6         PendSV_Handler
+  158 000000A6 B672            CPSID            I           ; Prevent interrupt
+                                                            ion during context 
+                                                            switch
+  159 000000A8         
+  160 000000A8         
+  161 000000A8         ;1) check marked for deletion
+  162 000000A8 481E            LDR              R0, =RunPt
+  163 000000AA 6801            LDR              R1, [R0]    ;Run Pt val
+  164 000000AC 684A            LDR              R2, [R1,#4] ;RunPt->kill
+  165 000000AE 3200            ADDS             R2, #0      ;set cc
+  166 000000B0 D00E            BEQ              psv_SaveContext ;0: alive, 1: d
+                                                            elete
+  167 000000B2         
+  168 000000B2         ;1) delete thread, do not save context
+  169 000000B2         psv_DeleteLoop
+  170 000000B2 B500            PUSH             {LR}
+  171 000000B4 F7FF FFFE       BL               OS_RemoveCurrentThread ;NodePt 
+                                                            = NodePt->Prev
+  172 000000B8 F85D EB04       POP              {LR}
+  173 000000BC 4819            LDR              R0, =RunPt  ;RuntPt = RunPt->Pr
+                                                            ev
+  174 000000BE 6800            LDR              R0, [R0]    ;Old thread was fre
+                                                            ed
+  175 000000C0 F8D0 D000       LDR              SP, [R0]    ;Update Stack Point
+                                                            er to RunPt->Prev->
+                                                            SP
+  176 000000C4         
+  177 000000C4         ;1) check marked for deletion again
+  178 000000C4 4817            LDR              R0, =RunPt
+  179 000000C6 6801            LDR              R1, [R0]    ;Run Pt val
+  180 000000C8 684A            LDR              R2, [R1,#4] ;RunPt->kill
+  181 000000CA 3200            ADDS             R2, #0      ;set cc
+  182 000000CC         
+  183 000000CC D006            BEQ              psv_SleepCheckLoop ;0: alive, 1
+                                                            : delete.
+  184 000000CE E7F0            B                psv_DeleteLoop ;kill = 1,  Loop
+                                                             again, needs delet
+                                                            ion
+  185 000000D0         
+  186 000000D0         
+  187 000000D0         ;1) alive thread, save context
+  188 000000D0         psv_SaveContext
+  189 000000D0 E92D 0FF0       PUSH             {R4-R11}    ; Save remaining re
+                                                            gs r4-11
+  190 000000D4 4813            LDR              R0, =RunPt  ; R0=pointer to Run
+                                                            Pt, old thread
+  191 000000D6 6801            LDR              R1, [R0]    ; RunPt->stackPoint
+                                                            er = SP;
+
+
+
+ARM Macro Assembler    Page 6 
+
+
+  192 000000D8 F8C1 D000       STR              SP, [R1]    ; save SP of proces
+                                                            s being switched ou
+                                                            t
+  193 000000DC         
+  194 000000DC         ;psv_NoSaveContext
+  195 000000DC         ;2) Find the Next Thread that is not sleeping
+  196 000000DC         psv_SleepCheckLoop
+  197 000000DC 4811            LDR              R0, =RunPt  ; R0=pointer to Run
+                                                            Pt, current thread
+  198 000000DE 4912            LDR              R1, =NodePt
+  199 000000E0 680A            LDR              R2, [R1]    ; R2=NodePt
+  200 000000E2 6812            LDR              R2, [R2]    ; R2=NodePt->Next
+  201 000000E4         
+  202 000000E4 600A            STR              R2, [R1]    ; NodePt = NodePt->
+                                                            Next;
+  203 000000E6 6853            LDR              R3, [R2,#4] ; R3= NodePt->Next-
+                                                            >Thread;// which th
+                                                            read
+  204 000000E8 6003            STR              R3, [R0]    ; RunPt = NodePt->N
+                                                            ext->ThreadPt
+  205 000000EA         
+  206 000000EA B500            PUSH{LR}                     ;save LR
+  207 000000EC 480E            LDR              R0, =NodePt
+  208 000000EE 6800            LDR              R0,[R0]
+  209 000000F0 F7FF FFFE       BL               OS_SleepCheck ;Check if sleep >
+                                                             OS_Time
+  210 000000F4 F85D EB04       POP{LR}
+  211 000000F8 3000            ADDS             R0,#0       ; -1 still sleeping
+                                                            
+  212 000000FA         
+  213 000000FA D4EF            BMI              psv_SleepCheckLoop ;  Negative 
+                                                            = still sleeping so
+                                                             load next TCB
+  214 000000FC D004            BEQ              psv_SkipSleepClear ;  0: OS Sle
+                                                            ep was 0, skip upda
+                                                            ting the sleep
+  215 000000FE B500            PUSH{LR}
+  216 00000100 4809            LDR              R0, =NodePt
+  217 00000102 6800            LDR              R0,[R0]
+  218 00000104         ; BL  OS_SleepClear  ; Set NodePt->Sleep to 0, it is awa
+                       ke
+  219 00000104 F85D EB04       POP{LR}
+  220 00000108         
+  221 00000108         psv_SkipSleepClear
+  222 00000108         ;3) clear SYSTICK CURRENT
+  223 00000108         ; LDR  R2, [R1]     ;
+  224 00000108         ;    LDR     R2, [R2,#8]     ; NodePt->TimeSlice
+  225 00000108         ;    SUB     R2, #50            ; subtract off time to r
+                       un this ISR
+  226 00000108         ;    LDR     R1, =NVIC_ST_RELOAD
+  227 00000108         ; STR     R2, [R1]           ; how long to run next thre
+                       ad
+  228 00000108 4908            LDR              R1, =NVIC_ST_CURRENT
+  229 0000010A F04F 0214       MOV              R2, #20
+  230 0000010E 600A            STR              R2, [R1]    ; write to current,
+                                                             clears it
+  231 00000110         
+  232 00000110         ;4) load context of next thread
+  233 00000110 4904            LDR              R1, =RunPt
+
+
+
+ARM Macro Assembler    Page 7 
+
+
+  234 00000112 680B            LDR              R3, [R1]    ; R3 = RunPt Val
+  235 00000114 F8D3 D000       LDR              SP, [R3]    ; new thread SP; SP
+                                                             = RunPt->stackPoin
+                                                            ter;
+  236 00000118         
+  237 00000118 E8BD 0FF0       POP              {R4-R11}    ; restore regs r4-1
+                                                            1 
+  238 0000011C         
+  239 0000011C B662            CPSIE            I           ; tasks run with I=
+                                                            0
+  240 0000011E 4770            BX               LR          ; Exception return 
+                                                            will restore remain
+                                                            ing context   
+  241 00000120         
+  242 00000120         
+  243 00000120         
+  244 00000120         
+  245 00000120                 ALIGN
+  246 00000120                 END
+              E000E014 
+              00000000 
+              00000000 
+              E000E018 
+Command Line: --debug --xref --cpu=Cortex-M4 --apcs=interwork --depend=.\osasm.
+d -o.\osasm.o -IC:\Keil\ARM\RV31\INC -IC:\Keil\ARM\CMSIS\Include -IC:\Keil\ARM\
+Inc\Luminary --predefine="__EVAL SETA 1" --list=.\osasm.lst osasm.s
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Relocatable symbols
+
+.text 00000000
+
+Symbol: .text
+   Definitions
+      At line 8 in file osasm.s
+   Uses
+      None
+Comment: .text unused
+OSStartHang 0000002A
+
+Symbol: OSStartHang
+   Definitions
+      At line 58 in file osasm.s
+   Uses
+      At line 59 in file osasm.s
+Comment: OSStartHang used once
+OS_Launch 00000002
+
+Symbol: OS_Launch
+   Definitions
+      At line 42 in file osasm.s
+   Uses
+      At line 22 in file osasm.s
+Comment: OS_Launch used once
+PendSV_Handler 000000A6
+
+Symbol: PendSV_Handler
+   Definitions
+      At line 157 in file osasm.s
+   Uses
+      At line 24 in file osasm.s
+Comment: PendSV_Handler used once
+SysTick_Handler 0000002C
+
+Symbol: SysTick_Handler
+   Definitions
+      At line 66 in file osasm.s
+   Uses
+      At line 23 in file osasm.s
+Comment: SysTick_Handler used once
+psv_DeleteLoop 000000B2
+
+Symbol: psv_DeleteLoop
+   Definitions
+      At line 169 in file osasm.s
+   Uses
+      At line 184 in file osasm.s
+Comment: psv_DeleteLoop used once
+psv_SaveContext 000000D0
+
+Symbol: psv_SaveContext
+   Definitions
+      At line 188 in file osasm.s
+   Uses
+      At line 166 in file osasm.s
+Comment: psv_SaveContext used once
+psv_SkipSleepClear 00000108
+
+Symbol: psv_SkipSleepClear
+
+
+
+ARM Macro Assembler    Page 2 Alphabetic symbol ordering
+Relocatable symbols
+
+   Definitions
+      At line 221 in file osasm.s
+   Uses
+      At line 214 in file osasm.s
+Comment: psv_SkipSleepClear used once
+psv_SleepCheckLoop 000000DC
+
+Symbol: psv_SleepCheckLoop
+   Definitions
+      At line 196 in file osasm.s
+   Uses
+      At line 183 in file osasm.s
+      At line 213 in file osasm.s
+
+sh_DeleteLoop 00000038
+
+Symbol: sh_DeleteLoop
+   Definitions
+      At line 78 in file osasm.s
+   Uses
+      At line 93 in file osasm.s
+Comment: sh_DeleteLoop used once
+sh_SaveContext 00000056
+
+Symbol: sh_SaveContext
+   Definitions
+      At line 97 in file osasm.s
+   Uses
+      At line 75 in file osasm.s
+Comment: sh_SaveContext used once
+sh_SkipSleepClear 0000008E
+
+Symbol: sh_SkipSleepClear
+   Definitions
+      At line 130 in file osasm.s
+   Uses
+      At line 123 in file osasm.s
+Comment: sh_SkipSleepClear used once
+sh_SleepCheckLoop 00000062
+
+Symbol: sh_SleepCheckLoop
+   Definitions
+      At line 105 in file osasm.s
+   Uses
+      At line 92 in file osasm.s
+      At line 122 in file osasm.s
+
+13 symbols
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Absolute symbols
+
+NVIC_INT_CTRL E000ED04
+
+Symbol: NVIC_INT_CTRL
+   Definitions
+      At line 29 in file osasm.s
+   Uses
+      None
+Comment: NVIC_INT_CTRL unused
+NVIC_LEVEL14 000000EF
+
+Symbol: NVIC_LEVEL14
+   Definitions
+      At line 32 in file osasm.s
+   Uses
+      None
+Comment: NVIC_LEVEL14 unused
+NVIC_LEVEL15 000000FF
+
+Symbol: NVIC_LEVEL15
+   Definitions
+      At line 33 in file osasm.s
+   Uses
+      None
+Comment: NVIC_LEVEL15 unused
+NVIC_PENDSVSET 10000000
+
+Symbol: NVIC_PENDSVSET
+   Definitions
+      At line 34 in file osasm.s
+   Uses
+      None
+Comment: NVIC_PENDSVSET unused
+NVIC_ST_CURRENT E000E018
+
+Symbol: NVIC_ST_CURRENT
+   Definitions
+      At line 36 in file osasm.s
+   Uses
+      At line 137 in file osasm.s
+      At line 228 in file osasm.s
+
+NVIC_ST_RELOAD E000E014
+
+Symbol: NVIC_ST_RELOAD
+   Definitions
+      At line 35 in file osasm.s
+   Uses
+      At line 43 in file osasm.s
+Comment: NVIC_ST_RELOAD used once
+NVIC_SYSPRI14 E000ED22
+
+Symbol: NVIC_SYSPRI14
+   Definitions
+      At line 30 in file osasm.s
+   Uses
+      None
+Comment: NVIC_SYSPRI14 unused
+NVIC_SYSPRI15 E000ED23
+
+
+
+
+ARM Macro Assembler    Page 2 Alphabetic symbol ordering
+Absolute symbols
+
+Symbol: NVIC_SYSPRI15
+   Definitions
+      At line 31 in file osasm.s
+   Uses
+      None
+Comment: NVIC_SYSPRI15 unused
+TIMER0_ICR_R 40030024
+
+Symbol: TIMER0_ICR_R
+   Definitions
+      At line 27 in file osasm.s
+   Uses
+      None
+Comment: TIMER0_ICR_R unused
+TIMER_ICR_TATOCINT 00000001
+
+Symbol: TIMER_ICR_TATOCINT
+   Definitions
+      At line 28 in file osasm.s
+   Uses
+      None
+Comment: TIMER_ICR_TATOCINT unused
+10 symbols
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+External symbols
+
+NodePt 00000000
+
+Symbol: NodePt
+   Definitions
+      At line 14 in file osasm.s
+   Uses
+      At line 107 in file osasm.s
+      At line 116 in file osasm.s
+      At line 125 in file osasm.s
+      At line 198 in file osasm.s
+      At line 207 in file osasm.s
+      At line 216 in file osasm.s
+
+OS_RemoveCurrentThread 00000000
+
+Symbol: OS_RemoveCurrentThread
+   Definitions
+      At line 17 in file osasm.s
+   Uses
+      At line 80 in file osasm.s
+      At line 171 in file osasm.s
+
+OS_SleepCheck 00000000
+
+Symbol: OS_SleepCheck
+   Definitions
+      At line 15 in file osasm.s
+   Uses
+      At line 118 in file osasm.s
+      At line 209 in file osasm.s
+
+OS_SleepClear 00000000
+
+Symbol: OS_SleepClear
+   Definitions
+      At line 16 in file osasm.s
+   Uses
+      None
+Comment: OS_SleepClear unused
+RunPt 00000000
+
+Symbol: RunPt
+   Definitions
+      At line 13 in file osasm.s
+   Uses
+      At line 46 in file osasm.s
+      At line 71 in file osasm.s
+      At line 82 in file osasm.s
+      At line 87 in file osasm.s
+      At line 99 in file osasm.s
+      At line 106 in file osasm.s
+      At line 142 in file osasm.s
+      At line 162 in file osasm.s
+      At line 173 in file osasm.s
+      At line 178 in file osasm.s
+      At line 190 in file osasm.s
+      At line 197 in file osasm.s
+      At line 233 in file osasm.s
+
+
+
+
+ARM Macro Assembler    Page 2 Alphabetic symbol ordering
+External symbols
+
+5 symbols
+361 symbols in table

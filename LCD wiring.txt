@@ -1,0 +1,13 @@
+1 vcc 		3.3v		white
+2 gnd		ground		black
+3 !scl		PA2 SSIOClk	red
+4 !sda	?MOSI?	PA5 SSI0Tx	orange
+5 dc		PA6 GPIO	grey
+6 res		PA7 GPIO	purple	
+7 cs		PA3 SSIOFss	blue
+8 cs		-----
+9 miso		-----
+10 sda		-----
+11 scl		-----
+12 sdo(MOSI)	-----
+13 backlight	3.3v		yellow
