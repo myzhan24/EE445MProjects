@@ -192,6 +192,8 @@ void OS_Sleep(unsigned long sleepTime);
 // output: none
 void OS_Kill(void); 
 
+void OS_KillS(int* special); 
+
 // ******** OS_Suspend ************
 // suspend execution of currently running thread
 // scheduler will choose another thread to execute

@@ -258,6 +258,7 @@ void OS_Suspend(void){
 	//NVIC_INT_CTRL_R = 0x10000000;    // trigger PendSV 
 	NVIC_ST_CURRENT_R = 0;
 	NVIC_INT_CTRL_R = 0x04000000;  //trigger SYSTICK Interrupt
+	//EnableInterrupts();
 	//WaitForInterrupt();
 }
 
@@ -309,12 +310,18 @@ int OS_AddSW1Task(void(*task)(void), unsigned long priority){
 // Inputs:  none
 // Outputs: data 
 unsigned long OS_Fifo_Get(void){
-    char output;
+    char output; int sr;
     OS_Wait(&DataAvailable);
     OS_bWait(&FifoAvailable);
-    TmailFifo_Get(&output);
-    OS_bSignal(&FifoAvailable);
-    OS_Signal(&DataRoomLeft);
+		
+	sr = StartCritical();
+	TmailFifo_Get(&output);
+	
+	OS_bSignal(&FifoAvailable); 
+	OS_Signal(&DataRoomLeft);
+		
+	EndCritical(sr);
+	
 		return output;
 }
 
@@ -344,6 +351,23 @@ void OS_Fifo_Init(unsigned long size){
 // Since this is called by interrupt handlers 
 //  this function can not disable or enable interrupts
 int OS_Fifo_Put(unsigned long data){
+	int ret; int sr;
+	//OS_Wait(&DataRoomLeft);
+	OS_bWait(&FifoAvailable);
+	sr = StartCritical();
+	
+	ret = TmailFifo_Put(data);
+	OS_bSignal(&FifoAvailable);
+	if(ret)
+		OS_Signal(&DataAvailable);
+	
+	EndCritical(sr);
+	return ret;
+}
+
+
+/*
+int OS_Fifo_Put(unsigned long data){
     int value;
 //    OS_bWait(&FifoAvailable);
     value = TmailFifo_Put(data);
@@ -353,7 +377,7 @@ int OS_Fifo_Put(unsigned long data){
 //    OS_bSignal(&FifoAvailable);
     return value;
 }
-
+*/
 
 //******** OS_Id *************** 
 // returns the thread ID for the currently running thread
@@ -418,6 +442,13 @@ void OS_Kill(void){
 	OS_Suspend();				//PendSV will check this 
 }
 
+void OS_KillS(int* special){
+	RunPt->kill=1;			//Thread is Marked for Deletion.
+	*special = 0;
+	OS_Suspend();				//PendSV will check this 
+}
+
+
 // ******** OS_MailBox_Init ************
 // Initialize communication channel
 // Inputs:  none
@@ -433,9 +464,12 @@ void OS_MailBox_Init(void){
 // This function will be called from a foreground thread
 // It will spin/block if the MailBox contains data not yet received 
 void OS_MailBox_Send(unsigned long data){
-    OS_bWait(&BoxFree);
-    mailbox = data;
-    OS_bSignal(&DataValid);
+  int sr;  
+	OS_bWait(&BoxFree);
+	sr = StartCritical();	
+  mailbox = data;
+  OS_bSignal(&DataValid);
+	EndCritical(sr);
 }
 
 // ******** OS_MailBox_Recv ************
@@ -445,10 +479,13 @@ void OS_MailBox_Send(unsigned long data){
 // This function will be called from a foreground thread
 // It will spin/block if the MailBox is empty 
 unsigned long OS_MailBox_Recv(void){
+	int sr;
     unsigned long data;
     OS_bWait(&DataValid);
+  sr = StartCritical();
     data = mailbox;
     OS_bSignal(&BoxFree);
+	EndCritical(sr);
     return data;
 }
 
@@ -459,7 +496,7 @@ unsigned long OS_MailBox_Recv(void){
 // input:  pointer to a counting semaphore
 // output: none
 void OS_Signal(Sema4Type *semaPt){
-	int status;
+	//int status;
 	//status= StartCritical();
 	semaPt->Value++;
 	//EndCritical(status);
@@ -475,12 +512,12 @@ void OS_Signal(Sema4Type *semaPt){
 // output: none
 void OS_Wait(Sema4Type *semaPt){
 	//DisableInterrupts();
-	while(semaPt->Value <= 0){
+	while(semaPt->Value < 1){
 		//EnableInterrupts();
-	//ColorSwap();
+	  //ColorSwap();
 		OS_Suspend();
 		//DisableInterrupts();
-	}
+	};
 	semaPt->Value--;
 	//EnableInterrupts();
 }
@@ -491,9 +528,10 @@ void OS_Wait(Sema4Type *semaPt){
 // input:  pointer to a binary semaphore
 // output: none
 void OS_bSignal(Sema4Type *semaPt){
-	long status;
+	//long status;
 	//status= StartCritical();
 	semaPt->Value=1;
+	//OS_Suspend();
 	//EndCritical(status);
 }
 
@@ -504,9 +542,9 @@ void OS_bSignal(Sema4Type *semaPt){
 // output: none
 
 void OS_bWait(Sema4Type *semaPt){
-	while(semaPt->Value <= 0){
+	while(semaPt->Value < 1){
 		OS_Suspend();
-	}
+	};
 	semaPt->Value=0;
 }
 

@@ -66,9 +66,11 @@ void Timer3A_Handler(void){
 	
 	//DisableInterrupts();
 	int sr = StartCritical();
+	
 	TIMER3_ICR_R = TIMER_ICR_TATOCINT;// acknowledge TIMER3A timeout
   (*PeriodicTask)();                // execute user task
 	periodicInterruptCount++;
+	
 	EndCritical(sr);
 	//EnableInterrupts();
 }

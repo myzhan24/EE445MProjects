@@ -3,7 +3,6 @@
 ".\pll.o"
 ".\uart.o"
 ".\adc.o"
-".\adcsw.o"
 ".\heap.o"
 ".\lab2.o"
 ".\os.o"

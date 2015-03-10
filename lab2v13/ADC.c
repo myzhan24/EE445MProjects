@@ -345,16 +345,23 @@ int8_t ADC_Open(uint8_t channelNum){
 
 volatile uint32_t ADCvalue;
 void ADC0Seq3_Handler(void){	// timer generates conversion
+	int sr = StartCritical();
   ADCvalue = ADC0_SSFIFO3_R;  // 12-bit result
 	ADC0_ISC_R |= 0x08;          // acknowledge ADC sequence 3 completion
-
+	EndCritical(sr);
 	//Producer(ADCvalue);
 	//collectDone = 1;
 }
 
+volatile uint32_t ADCT0value;
 void ADC0Seq2_Handler(void){
+	unsigned long value;
+	int sr = StartCritical();
+	
+	value = ADC0_SSFIFO2_R;
 	ADC0_ISC_R |= 0x04;
-	unsigned long value = ADC0_SSFIFO2_R;
+	
+	EndCritical(sr);
 	adcTask(value);
 }
 
@@ -425,13 +432,17 @@ void ADC_Collect(uint8_t channelNum, uint32_t FS, void (*task)(unsigned long)){
 	ADC0_SSCTL2_R = 0x06;          // set flag and end                       
 	ADC0_IM_R |= 0x04;             // enable SS2 interrupts
 	ADC0_ACTSS_R |= 0x04;          // enable sample sequencer 2
-	NVIC_PRI4_R = (NVIC_PRI4_R&0xFFFFFF00)|0x00000080; //priority 1
+	//NVIC_PRI4_R = (NVIC_PRI4_R&0xFFFFFF00)|0x00000080; //priority 1
+		NVIC_PRI4_R = (NVIC_PRI4_R&0xFFFFFF00)|0x00000080; //priority 1
 	NVIC_EN0_R |= 1<<16;              // enable interrupt 16 in NVIC
 		
 	adcTask = task;	
 		
 	EndCritical(sr);
 	
+	//while((ADC0_RIS_R & 0x04)==8) {};
+		//task(ADCT0value);
+		
 	//collectDone = 1;
 }
 

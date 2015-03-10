@@ -51,7 +51,7 @@ OS_Launch
     POP     {R0-R3}            ; restore regs r0-3 
     POP     {R12}
     POP     {LR}               ; discard LR from initial stack
-    POP     {LR}               ; start location
+    POP     {LR}               ; start location; initial pc
     POP     {R1}               ; discard PSR
     CPSIE   I                  ; Enable interrupts at processor level
     BX      LR                 ; start first thread
@@ -103,6 +103,7 @@ sh_DeleteLoop
 	
 ;1) alive thread, save context
 sh_SaveContext
+	;PUSH	{LR}
 	PUSH    {R4-R11}           ; Save remaining regs r4-11
     LDR     R0, =RunPt         ; R0=pointer to RunPt, old thread
     LDR     R1, [R0]		   ; RunPt->stackPointer = SP;
@@ -157,8 +158,10 @@ sh_SkipSleepClear
 	;MOV		R1, #0
 	;STR		R1,[R0]
 	
+	;POP		{LR}
     POP     {R4-R11}           ; restore regs r4-11 
-
+	
+	
     CPSIE   I				   ; tasks run with I=0
     BX      LR                 ; Exception return will restore remaining context   
 	

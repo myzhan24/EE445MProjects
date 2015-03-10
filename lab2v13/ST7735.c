@@ -1024,22 +1024,27 @@ void ST7735_DrawBitmap(int16_t x, int16_t y, const uint16_t *image, int16_t w, i
 
 void ST7735_DrawCharS(int16_t x, int16_t y, uint8_t c, int16_t textColor, int16_t bgColor, uint8_t size){
 	int dcsr;
-	//sr = StartCritical();
+	//dcsr = StartCritical();
   uint8_t line; // vertical column of pixels of character in font
   int32_t i, j;
   if((x >= _width)            || // Clip right
      (y >= _height)           || // Clip bottom
      ((x + 5 * size - 1) < 0) || // Clip left
      ((y + 8 * size - 1) < 0))   // Clip top
-    return;
+   {
+		 //EndCritical(dcsr);
+	 return;}
 
+	//dcsr = StartCritical();
   for (i=0; i<6; i++ ) {
+		//dcsr = StartCritical();
     if (i == 5)
       line = 0x0;
     else
       line = Font[(c*5)+i];
     for (j = 0; j<8; j++) {
-			dcsr = StartCritical();
+			//dcsr = StartCritical();
+			//DisableInterrupts();
       if (line & 0x1) {
         if (size == 1) // default size
           ST7735_DrawPixel(x+i, y+j, textColor);
@@ -1054,10 +1059,12 @@ void ST7735_DrawCharS(int16_t x, int16_t y, uint8_t c, int16_t textColor, int16_
         }
       }
       line >>= 1;
-			EndCritical(dcsr);
+			//EndCritical(dcsr);
+			//EnableInterrupts();
     }
+		//EndCritical(dcsr);
   }
-	//EndCritical(sr);
+	//EndCritical(dcsr);
 }
 
 
@@ -1154,7 +1161,7 @@ void fillmessage(uint32_t n){
   if(Messageindex<11)Messageindex++;
 }
 
-void fillmymessage(uint32_t n, char * mess, uint32_t * messi){
+void fillmymessage(uint32_t n, uint8_t * mess, uint32_t * messi){
 // This function uses recursion to convert decimal number
 //   of unspecified length as an ASCII string
   if(n >= 10){
@@ -1526,21 +1533,27 @@ void ST7735_PlotNextErase(void){
 // Inputs: 8-bit ASCII character
 // Outputs: none
 void ST7735_OutChar(char ch){
+	
   if((ch == 10) || (ch == 13) || (ch == 27)){
+		//int sr = StartCritical();
     StY++; StX=0;
     if(StY>15){
       StY = 0;
     }
     ST7735_DrawString(0,StY,"                     ",StTextColor);
-    return;
-  }
+		//EndCritical(sr);
+    //return;
+  } else {
+		
   ST7735_DrawCharS(StX*6,StY*10,ch,ST7735_YELLOW,ST7735_BLACK, 1);
   StX++;
   if(StX>20){
     StX = 20;
     ST7735_DrawCharS(StX*6,StY*10,'*',ST7735_RED,ST7735_BLACK, 1);
   }
-  return;
+	//EndCritical(sr);
+  //return;
+	}
 }
 //********ST7735_OutString*****************
 // Print a string of characters to the ST7735 LCD.
@@ -1619,42 +1632,280 @@ void Output_Color(uint32_t newColor){ // Set color of future output
 }
 
 
+uint8_t myMessage[12];
+uint32_t myMessageindex;
 
 void ST7735_Message(uint16_t device, uint16_t line,char *ptr, uint32_t n){
-	OS_bWait(&LCDLock);
-	
 	int sr;
-	uint16_t lineStart = device*8; //top half of display is lines 0-7, bottom half 8-15
-    if (device > 1 || line > 3) { return; }//error
+	uint16_t lineStart;
+	OS_bWait(&LCDLock);
+	//sr = StartCritical();
+	lineStart = device*8; //top half of display is lines 0-7, bottom half 8-15
+    if (device > 1 || line > 3) {OS_bSignal(&LCDLock); return; }//error
     
     lineStart += line*2; //each "line" is 2 y positions
    if((0 > 20) || (lineStart > 15)){       // bad input
-    return;                             // do nothing
+   OS_bSignal(&LCDLock); return;                             // do nothing
   }
 	 
   StX = 0;
   StY = lineStart;
 	
+	int x;
+	int y;
+	int size;
+	int dcsr;
+	int textColor;
+	int bgColor;
+	int xp;
+	int yp;
 	//string print
   while(*ptr){
-		//sr = StartCritical();
-    ST7735_OutChar(*ptr);
-    ptr = ptr + 1;
+    //ST7735_OutChar(*ptr);
+				
+		if((*ptr == 10) || (*ptr == 13) || (*ptr == 27)){
+		//int sr = StartCritical();
+    StY++; StX=0;
+    if(StY>15){
+      StY = 0;
+    }
+    ST7735_DrawString(0,StY,"                     ",StTextColor);
 		//EndCritical(sr);
+    //return;
+  } else {
+  //ST7735_DrawCharS(StX*6,StY*10,*ptr,ST7735_YELLOW,ST7735_BLACK, 1);
+		x = StX*6;
+		y = StY*10;
+		textColor = ST7735_YELLOW;
+		bgColor = ST7735_BLACK;
+		size = 1;
+		
+	//dcsr = StartCritical();
+  uint8_t line; // vertical column of pixels of character in font
+  int32_t i, j;
+  if((x >= _width)            || // Clip right
+     (y >= _height)           || // Clip bottom
+     ((x + 5 * size - 1) < 0) || // Clip left
+     ((y + 8 * size - 1) < 0))   // Clip top
+   {
+		 //EndCritical(dcsr);
+	 return;}
+
+	//dcsr = StartCritical();
+  for (i=0; i<6; i++ ) {
+		//dcsr = StartCritical();
+    if (i == 5)
+      line = 0x0;
+    else
+      line = Font[((*ptr)*5)+i];
+    for (j = 0; j<8; j++) {
+			//dcsr = StartCritical();
+			//DisableInterrupts();
+      if (line & 0x1) {
+        if (size == 1) // default size
+				{
+          //ST7735_DrawPixel(x+i, y+j, textColor);
+					xp = x+i;
+					yp = y+j;
+					if((xp < 0) || (xp>= _width) || (yp < 0) || (yp>= _height)) {}
+
+					else{
+					dcsr = StartCritical();
+					setAddrWindow(xp,yp,xp+1,yp+1);
+
+					pushColor(textColor);
+					EndCritical(dcsr);
+					}
+				}
+        else {  // big size
+          ST7735_FillRect(x+(i*size), y+(j*size), size, size, textColor);
+        }
+      } else if (bgColor != textColor) {
+        if (size == 1) // default size
+				{
+          //ST7735_DrawPixel(x+i, y+j, bgColor);
+					xp = x+i;
+					yp = y+j;
+					if((xp < 0) || (xp>= _width) || (yp < 0) || (yp>= _height)) {}
+
+					else{
+					dcsr = StartCritical();
+					setAddrWindow(xp,yp,xp+1,yp+1);
+
+					pushColor(bgColor);
+					EndCritical(dcsr);
+					}
+				}
+        else {  // big size
+          ST7735_FillRect(x+i*size, y+j*size, size, size, bgColor);
+        }
+      }
+      line >>= 1;
+			//EndCritical(dcsr);
+			//EnableInterrupts();
+    }
+		//EndCritical(dcsr);
   }
-	
-	Messageindex = 0;
-  fillmessage(n);
-  Message[Messageindex] = 0; // terminate
-  ST7735_DrawString(StX,StY,Message,StTextColor);
-  StX = StX+Messageindex;
+	//EndCritical(dcsr);
+		
+		
+  StX++;
   if(StX>20){
     StX = 20;
     ST7735_DrawCharS(StX*6,StY*10,'*',ST7735_RED,ST7735_BLACK, 1);
   }
+	//EndCritical(sr);
+  //return;
+		
+}
+
+		
+    ptr = ptr + 1;
+  }
+	
+	
+	//sr = StartCritical();
+	
+	//DisableInterrupts();
+	myMessageindex = 0;
+  fillmymessage(n,myMessage,&myMessageindex);
+	myMessage[myMessageindex]=0;
+  //Message[Messageindex] = 0; // terminate
+	//EnableInterrupts();
+	//EndCritical(sr);
+	uint8_t * point = myMessage;
+	while(*point){
+    //ST7735_OutChar(*point);
+		
+		if((*point == 10) || (*point == 13) || (*point == 27)){
+		//int sr = StartCritical();
+    StY++; StX=0;
+    if(StY>15){
+      StY = 0;
+    }
+    ST7735_DrawString(0,StY,"                     ",StTextColor);
+		//EndCritical(sr);
+    //return;
+  } else {
+  //ST7735_DrawCharS(StX*6,StY*10,*ptr,ST7735_YELLOW,ST7735_BLACK, 1);
+		x = StX*6;
+		y = StY*10;
+		textColor = ST7735_YELLOW;
+		bgColor = ST7735_BLACK;
+		size = 1;
+		
+	//dcsr = StartCritical();
+  uint8_t line; // vertical column of pixels of character in font
+  int32_t i, j;
+  if((x >= _width)            || // Clip right
+     (y >= _height)           || // Clip bottom
+     ((x + 5 * size - 1) < 0) || // Clip left
+     ((y + 8 * size - 1) < 0))   // Clip top
+   {
+		 //EndCritical(dcsr);
+	 return;}
+
+	//dcsr = StartCritical();
+  for (i=0; i<6; i++ ) {
+		//dcsr = StartCritical();
+    if (i == 5)
+      line = 0x0;
+    else
+      line = Font[((*point)*5)+i];
+    for (j = 0; j<8; j++) {
+			//dcsr = StartCritical();
+			//DisableInterrupts();
+      if (line & 0x1) {
+        if (size == 1) // default size
+				{
+          //ST7735_DrawPixel(x+i, y+j, textColor);
+					xp = x+i;
+					yp = y+j;
+					if((xp < 0) || (xp>= _width) || (yp < 0) || (yp>= _height)) {}
+
+					else{
+					dcsr = StartCritical();
+					setAddrWindow(xp,yp,xp+1,yp+1);
+
+					pushColor(textColor);
+					EndCritical(dcsr);
+					}
+				}
+        else {  // big size
+          ST7735_FillRect(x+(i*size), y+(j*size), size, size, textColor);
+        }
+      } else if (bgColor != textColor) {
+        if (size == 1) // default size
+				{
+          //ST7735_DrawPixel(x+i, y+j, bgColor);
+					xp = x+i;
+					yp = y+j;
+					if((xp < 0) || (xp>= _width) || (yp < 0) || (yp>= _height)) {}
+
+					else{
+					dcsr = StartCritical();
+					setAddrWindow(xp,yp,xp+1,yp+1);
+
+					pushColor(bgColor);
+					EndCritical(dcsr);
+					}
+				}
+        else {  // big size
+          ST7735_FillRect(x+i*size, y+j*size, size, size, bgColor);
+        }
+      }
+      line >>= 1;
+			//EndCritical(dcsr);
+			//EnableInterrupts();
+    }
+		//EndCritical(dcsr);
+  }
+	//EndCritical(dcsr);
+		
+		
+  StX++;
+  if(StX>20){
+    StX = 20;
+    ST7735_DrawCharS(StX*6,StY*10,'*',ST7735_RED,ST7735_BLACK, 1);
+  }
+	//EndCritical(sr);
+  //return;
+		
+}
+
+		
+    point = point + 1;
+  }
+	
+ /* ST7735_DrawString(StX,StY,myMessage,StTextColor);
+	
+  StX = StX+myMessageindex;
+  if(StX>20){
+    StX = 20;
+    ST7735_DrawCharS(StX*6,StY*10,'*',ST7735_RED,ST7735_BLACK, 1);
+  }*/
+	//EndCritical(sr);
 	OS_bSignal(&LCDLock);
 }
 
+void ST7735_ClearLine(uint16_t device, uint16_t line) {
+	uint16_t lineStart;
+	int sr;
+	OS_bWait(&LCDLock);
+	lineStart = device*8; //top half of display is lines 0-7, bottom half 8-15
+    if (device > 1 || line > 3) {OS_bSignal(&LCDLock); return; }//error
+    
+    lineStart += line*2; //each "line" is 2 y positions
+   if((0 > 20) || (lineStart > 15)){       // bad input
+   OS_bSignal(&LCDLock); return;                             // do nothing
+  }
+	StX = 0;
+  StY = lineStart; 
+	
+	ST7735_DrawString(StX,StY,"                   ",StTextColor);
+	StX = 20;
+	OS_bSignal(&LCDLock);
+}
 
 /*
 void ST7735_Message(uint16_t device, uint16_t line,char *ptr, uint32_t n){

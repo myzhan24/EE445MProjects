@@ -426,11 +426,6 @@
               <FilePath>.\ADC.c</FilePath>
             </File>
             <File>
-              <FileName>ADCSW.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\ADCSW.c</FilePath>
-            </File>
-            <File>
               <FileName>heap.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\heap.c</FilePath>

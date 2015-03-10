@@ -148,6 +148,7 @@ long jitter;                    // time between measured and expected, in us
 // one foreground task created with button push
 // foreground treads run for 2 sec and die
 // ***********ButtonWork*************
+int buttonAlive=0;
 void ButtonWork(void){
 unsigned long myId = OS_Id(); 
   PE1 ^= 0x02;
@@ -158,7 +159,7 @@ unsigned long myId = OS_Id();
   ST7735_Message(1,2,"DataLost    =",DataLost);
   ST7735_Message(1,3,"Jitter 0.1us=",MaxJitter);
   PE1 ^= 0x02;
-  OS_Kill();  // done, OS does not return from a Kill
+  OS_KillS(&buttonAlive);  // done, OS does not return from a Kill
 } 
 
 //************SW1Push*************
@@ -167,7 +168,8 @@ unsigned long myId = OS_Id();
 // background threads execute once and return
 unsigned int last = 0;
 void SW1Push(void){
-  if(OS_MsTime() > last + 20){ // debounce
+  if(OS_MsTime() > last + 20 && !buttonAlive){ // debounce
+		buttonAlive=1;
     if(OS_AddThread(&ButtonWork,100,4)){
       NumCreated++; 
     }
@@ -254,9 +256,11 @@ unsigned long data,voltage;
 		//data = NumSamples*10;
     voltage = 3000*(data&0xFFF)/4095;               // calibrate your device so voltage is in mV
     PE3 = 0x08;
-    //if(oldData > 99 &&oldData > data && data <100)
-			//	ST7735_Message(0,2,"                                   ",voltage);
+    //if(oldData > 99 && data <100)
+			//ST7735_ClearLine(0,2);
+		
 		ST7735_Message(0,2,"v(mV) =",voltage);  
+		
     PE3 = 0x00;
 		oldData=data;
 NumSamples++;
@@ -398,7 +402,7 @@ void print2(void){
 
 
 //adc collect tester adc test main
-int fmain(void){
+int adcmain(void){
 	OS_Init();           // initialize, disable interrupts
   PortF_Init();
 	ADC_Init(5);  // sequencer 3, channel 4, PD3, sampling in DAS()
@@ -445,7 +449,7 @@ int lcdmain(void){
 int main(void){ 
   OS_Init();           // initialize, disable interrupts
   PortE_Init();
-	PortF_Init();
+	//PortF_Init();
   DataLost = 0;        // lost data between producer and consumer
   NumSamples = 0;
   MaxJitter = 0;       // in 1us units

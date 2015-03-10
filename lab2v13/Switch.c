@@ -121,8 +121,11 @@ void Board_Init(void(*task)(void)){
 
 void GPIOPortF_Handler(void) {
 	int status = StartCritical();
-	(*SWTask)();						//execute user task
+	
 	GPIO_PORTF_ICR_R = 0x10; //acknowledge flag4
+	
+	(*SWTask)();						//execute user task
+	
 	EndCritical(status);
 }
 

@@ -429,5 +429,7 @@ void ST7735_Message(uint16_t device, uint16_t line,char *ptr, uint32_t n);
 
 void ST7735_MessageTest(char * string,uint32_t value);
 
+void ST7735_ClearLine(uint16_t device, uint16_t line);
+
 
 #endif
