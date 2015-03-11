@@ -446,7 +446,7 @@ int lcdmain(void){
 }
 
 //*******************final user main DEMONTRATE THIS TO TA**********
-int main(void){ 
+int finalmain(void){ 
   OS_Init();           // initialize, disable interrupts
   PortE_Init();
 	//PortF_Init();
@@ -881,7 +881,7 @@ void Thread8(void){       // only thread running
     PE0 ^= 0x01;      // debugging profile  
   }
 }
-int testmain7(void){       // Testmain7
+int main(void){       // Testmain7
 	PortF_Init();
   PortE_Init();
   OS_Init();           // initialize, disable interrupts

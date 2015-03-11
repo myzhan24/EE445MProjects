@@ -3,23 +3,40 @@
 <pre>
 <h1>µVision Build Log</h1>
 <h2>Project:</h2>
-E:\Users\Matt\Documents\GitHub\EE445MProjects\lab2v13\UARTInts.uvproj
-Project File Date:  03/09/2015
+C:\Users\Matt\Documents\EE445M\EE445MProjects\lab2v13\UARTInts.uvproj
+Project File Date:  03/10/2015
 
 <h2>Output:</h2>
 Build target 'UARTInts'
+compiling UART.c...
+UART.h(119): warning:  #1-D: last line of file ends without a newline
+  void promptNumber(void);
+UART.c: 1 warning, 0 errors
+compiling Lab2.c...
+UART.h(119): warning:  #1-D: last line of file ends without a newline
+  void promptNumber(void);
+Lab2.c(251): warning:  #550-D: variable "oldData" was set but never used
+                unsigned long oldData;
+Lab2.c(317): warning:  #177-D: variable "i" was declared but never referenced
+        int i = 0;
+Lab2.c: 3 warnings, 0 errors
+compiling os.c...
+UART.h(119): warning:  #1-D: last line of file ends without a newline
+  void promptNumber(void);
+os.c: 1 warning, 0 errors
 compiling ST7735.c...
 ST7735.c(1026): warning:  #177-D: variable "dcsr" was declared but never referenced
         int dcsr;
-ST7735.c(1639): warning:  #177-D: variable "sr" was declared but never referenced
-        int sr;
-ST7735.c(1893): warning:  #177-D: variable "sr" was declared but never referenced
-        int sr;
-ST7735.c: 3 warnings, 0 errors
+ST7735.c: 1 warning, 0 errors
+compiling Timer1A.c...
+Timer1A.c(42): warning:  #550-D: variable "delay" was set but never used
+  void Timer1A_Init(uint32_t period){ int delay;
+Timer1A.c: 1 warning, 0 errors
+compiling Timer3A.c...
 linking...
-Program Size: Code=11780 RO-data=2052 RW-data=352 ZI-data=18808  
-".\UARTInts.axf" - 0 Error(s), 3 Warning(s).
-Load "E:\\Users\\Matt\\Documents\\GitHub\\EE445MProjects\\lab2v13\\UARTInts.axf" 
+Program Size: Code=10956 RO-data=2052 RW-data=348 ZI-data=18796  
+".\UARTInts.axf" - 0 Error(s), 7 Warning(s).
+Load "C:\\Users\\Matt\\Documents\\EE445M\\EE445MProjects\\lab2v13\\UARTInts.axf" 
 Connecting: Mode=JTAG, Speed=1000000Hz
 Erase Done.
 Programming Done.
@@ -27,22 +44,17 @@ Verify OK.
 </pre>
 </body>
 </html>
-ting: Mode=JTAG, Speed=1000000Hz
-Erase Done.
-Programming Done.
-Verify OK.
-\\Users\\Matt\\Documents\\GitHub\\EE445MProjects\\lab2v13\\UARTInts.axf" 
-Connecting: Mode=JTAG, Speed=1000000Hz
-Erase Done.
-Programming Done.
-Verify OK.
-t(uint32_t period){ int delay;
+ 1 warning, 0 errors
+compiling SysTickInts.c...
+compiling Timer1A.c...
+Timer1A.c(42): warning:  #550-D: variable "delay" was set but never used
+  void Timer1A_Init(uint32_t period){ int delay;
 Timer1A.c: 1 warning, 0 errors
 compiling Timer3A.c...
 linking...
-Program Size: Code=11112 RO-data=2052 RW-data=348 ZI-data=18796  
-".\UARTInts.axf" - 0 Error(s), 7 Warning(s).
-Load "E:\\Users\\Matt\\Documents\\GitHub\\EE445MProjects\\lab2v13\\UARTInts.axf" 
+Program Size: Code=11784 RO-data=2052 RW-data=352 ZI-data=18808  
+".\UARTInts.axf" - 0 Error(s), 11 Warning(s).
+Load "C:\\Users\\Matt\\Documents\\EE445M\\EE445MProjects\\lab2v13\\UARTInts.axf" 
 Connecting: Mode=JTAG, Speed=1000000Hz
 Erase Done.
 Programming Done.
