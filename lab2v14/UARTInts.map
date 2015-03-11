@@ -241,21 +241,6 @@ Section Cross References
     lab2.o(i.doNothing) refers to uart.o(i.UART_OutString) for UART_OutString
     lab2.o(i.doNothing) refers to uart.o(i.UART_OutUDec) for UART_OutUDec
     lab2.o(i.doNothing) refers to uart.o(i.UART_OutCRLF) for UART_OutCRLF
-    lab2.o(i.finalmain) refers to os.o(i.OS_Init) for OS_Init
-    lab2.o(i.finalmain) refers to lab2.o(i.PortE_Init) for PortE_Init
-    lab2.o(i.finalmain) refers to os.o(i.OS_MailBox_Init) for OS_MailBox_Init
-    lab2.o(i.finalmain) refers to os.o(i.OS_Fifo_Init) for OS_Fifo_Init
-    lab2.o(i.finalmain) refers to os.o(i.OS_AddSW1Task) for OS_AddSW1Task
-    lab2.o(i.finalmain) refers to adc.o(i.ADC_Init) for ADC_Init
-    lab2.o(i.finalmain) refers to os.o(i.OS_AddPeriodicThread) for OS_AddPeriodicThread
-    lab2.o(i.finalmain) refers to os.o(i.OS_AddThread) for OS_AddThread
-    lab2.o(i.finalmain) refers to osasm.o(.text) for OS_Launch
-    lab2.o(i.finalmain) refers to lab2.o(.data) for DataLost
-    lab2.o(i.finalmain) refers to lab2.o(i.SW1Push) for SW1Push
-    lab2.o(i.finalmain) refers to lab2.o(i.DAS) for DAS
-    lab2.o(i.finalmain) refers to lab2.o(i.Interpreter) for Interpreter
-    lab2.o(i.finalmain) refers to lab2.o(i.Consumer) for Consumer
-    lab2.o(i.finalmain) refers to lab2.o(i.PID) for PID
     lab2.o(i.lcdmain) refers to os.o(i.OS_Init) for OS_Init
     lab2.o(i.lcdmain) refers to os.o(i.OS_AddThread) for OS_AddThread
     lab2.o(i.lcdmain) refers to osasm.o(.text) for OS_Launch
@@ -277,6 +262,21 @@ Section Cross References
     lab2.o(i.printStuff) refers to uart.o(i.UART_OutString) for UART_OutString
     lab2.o(i.printStuff) refers to uart.o(i.UART_OutCRLF) for UART_OutCRLF
     lab2.o(i.printStuff) refers to os.o(i.OS_Sleep) for OS_Sleep
+    lab2.o(i.testmain) refers to os.o(i.OS_Init) for OS_Init
+    lab2.o(i.testmain) refers to lab2.o(i.PortE_Init) for PortE_Init
+    lab2.o(i.testmain) refers to os.o(i.OS_MailBox_Init) for OS_MailBox_Init
+    lab2.o(i.testmain) refers to os.o(i.OS_Fifo_Init) for OS_Fifo_Init
+    lab2.o(i.testmain) refers to os.o(i.OS_AddSW1Task) for OS_AddSW1Task
+    lab2.o(i.testmain) refers to adc.o(i.ADC_Init) for ADC_Init
+    lab2.o(i.testmain) refers to os.o(i.OS_AddPeriodicThread) for OS_AddPeriodicThread
+    lab2.o(i.testmain) refers to os.o(i.OS_AddThread) for OS_AddThread
+    lab2.o(i.testmain) refers to osasm.o(.text) for OS_Launch
+    lab2.o(i.testmain) refers to lab2.o(.data) for DataLost
+    lab2.o(i.testmain) refers to lab2.o(i.SW1Push) for SW1Push
+    lab2.o(i.testmain) refers to lab2.o(i.DAS) for DAS
+    lab2.o(i.testmain) refers to lab2.o(i.Interpreter) for Interpreter
+    lab2.o(i.testmain) refers to lab2.o(i.Consumer) for Consumer
+    lab2.o(i.testmain) refers to lab2.o(i.PID) for PID
     lab2.o(i.testmain1) refers to os.o(i.OS_Init) for OS_Init
     lab2.o(i.testmain1) refers to lab2.o(i.PortE_Init) for PortE_Init
     lab2.o(i.testmain1) refers to os.o(i.OS_AddThread) for OS_AddThread
@@ -735,12 +735,12 @@ Removing Unused input sections from the image.
     Removing lab2.o(i.adcmain), (60 bytes).
     Removing lab2.o(i.add), (20 bytes).
     Removing lab2.o(i.doNothing), (28 bytes).
-    Removing lab2.o(i.finalmain), (176 bytes).
     Removing lab2.o(i.lcdmain), (48 bytes).
     Removing lab2.o(i.print), (40 bytes).
     Removing lab2.o(i.print2), (40 bytes).
     Removing lab2.o(i.printLCD), (32 bytes).
     Removing lab2.o(i.printStuff), (36 bytes).
+    Removing lab2.o(i.testmain), (176 bytes).
     Removing lab2.o(i.testmain1), (108 bytes).
     Removing lab2.o(i.testmain7), (60 bytes).
     Removing lab2.o(.bss), (816 bytes).
@@ -1537,7 +1537,7 @@ Memory Map of the image
     0x00001194   0x00000040   Code   RO         1257    i.copyHardwareToSoftware  uart.o
     0x000011d4   0x00000040   Code   RO         1258    i.copySoftwareToHardware  uart.o
     0x00001214   0x0000001c   Code   RO          114    i.inHeapRange       heap.o
-    0x00001230   0x0000006c   Code   RO          269    i.main              lab2.o
+    0x00001230   0x0000006c   Code   RO          268    i.main              lab2.o
     0x0000129c   0x00000030   Code   RO          115    i.markBlockUnused   heap.o
     0x000012cc   0x00000030   Code   RO          116    i.markBlockUsed     heap.o
     0x000012fc   0x0000002e   Code   RO          117    i.mergeBlockWithBelow  heap.o

@@ -446,7 +446,7 @@ int lcdmain(void){
 }
 
 //*******************final user main DEMONTRATE THIS TO TA**********
-int finalmain(void){ 
+int testmain(void){ 
   OS_Init();           // initialize, disable interrupts
   PortE_Init();
 	//PortF_Init();
