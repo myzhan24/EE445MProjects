@@ -255,13 +255,13 @@ unsigned long data,voltage;
     data = OS_MailBox_Recv();
 		//data = NumSamples*10;
     voltage = 3000*(data&0xFFF)/4095;               // calibrate your device so voltage is in mV
-    PE3 = 0x08;
+    PE3 ^= 0x08;
     //if(oldData > 99 && data <100)
 			//ST7735_ClearLine(0,2);
 		
 		ST7735_Message(0,2,"v(mV) =",voltage);  
 		
-    PE3 = 0x00;
+    
 		oldData=data;
 NumSamples++;
   } 
@@ -446,7 +446,7 @@ int lcdmain(void){
 }
 
 //*******************final user main DEMONTRATE THIS TO TA**********
-int testmain(void){ 
+int main(void){ 
   OS_Init();           // initialize, disable interrupts
   PortE_Init();
 	//PortF_Init();
@@ -557,7 +557,7 @@ void Thread3b(void){
     Count3++;
   }
 }
-int main(void){  // Testmain2
+int testmain2(void){  // Testmain2
   OS_Init();           // initialize, disable interrupts
   PortE_Init();       // profile user threads
   NumCreated = 0 ;

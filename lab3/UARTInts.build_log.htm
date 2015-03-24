@@ -1,0 +1,60 @@
+<html>
+<body>
+<pre>
+<h1>µVision Build Log</h1>
+<h2>Project:</h2>
+C:\Users\Matt\Documents\EE445M\EE445MProjects\lab3\UARTInts.uvproj
+Project File Date:  03/10/2015
+
+<h2>Output:</h2>
+Build target 'UARTInts'
+compiling os.c...
+os.c(313): warning:  #177-D: variable "sr" was declared but never referenced
+      char output; int sr;
+os.c(354): warning:  #177-D: variable "sr" was declared but never referenced
+        int ret; int sr;
+os.c(467): warning:  #177-D: variable "sr" was declared but never referenced
+    int sr;  
+os.c(482): warning:  #177-D: variable "sr" was declared but never referenced
+        int sr;
+os.c: 4 warnings, 0 errors
+linking...
+Program Size: Code=10872 RO-data=2052 RW-data=348 ZI-data=18796  
+".\UARTInts.axf" - 0 Error(s), 4 Warning(s).
+Load "C:\\Users\\Matt\\Documents\\EE445M\\EE445MProjects\\lab3\\UARTInts.axf" 
+Connecting: Mode=JTAG, Speed=1000000Hz
+Erase Done.
+Programming Done.
+Verify OK.
+</pre>
+</body>
+</html>
+  #177-D: variable "sr" was declared but never referenced
+        int sr;
+os.c: 4 warnings, 0 errors
+compiling ST7735.c...
+ST7735.c(1026): warning:  #177-D: variable "dcsr" was declared but never referenced
+        int dcsr;
+ST7735.c: 1 warning, 0 errors
+compiling Timer1A.c...
+Timer1A.c(42): warning:  #550-D: variable "delay" was set but never used
+  void Timer1A_Init(uint32_t period){ int delay;
+Timer1A.c: 1 warning, 0 errors
+compiling Timer3A.c...
+compiling UART.c...
+UART.c(163): warning:  #177-D: variable "sr" was declared but never referenced
+        int sr;
+UART.c: 1 warning, 0 errors
+linking...
+Program Size: Code=10860 RO-data=2052 RW-data=352 ZI-data=18800  
+".\UARTInts.axf" - 0 Error(s), 10 Warning(s).
+Load "C:\\Users\\Matt\\Documents\\EE445M\\EE445MProjects\\lab3\\UARTInts.axf" 
+Connecting: Mode=JTAG, Speed=1000000Hz
+Erase Done.
+Programming Done.
+Verify OK.
+ #177-D: variable "sr" was declared but never referenced
+        int sr;
+UART.c: 2 warnings, 0 errors
+".\UARTInts.axf" - 1 Error(s), 13 Warning(s).
+Target not created
