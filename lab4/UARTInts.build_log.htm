@@ -1,0 +1,143 @@
+<html>
+<body>
+<pre>
+<h1>µVision Build Log</h1>
+<h2>Project:</h2>
+E:\Users\Matt\Documents\GitHub\EE445MProjects\lab4\UARTInts.uvproj
+Project File Date:  03/13/2015
+
+<h2>Output:</h2>
+Build target 'UARTInts'
+compiling ST7735.c...
+ST7735.c(1308): error:  #20: identifier "LCDLock" is undefined
+  OS_bWait(&LCDLock);
+ST7735.c: 0 warnings, 1 error
+".\UARTInts.axf" - 1 Error(s), 0 Warning(s).
+Target not created
+enced
+        int i = 0;
+Lab2.c: 2 warnings, 0 errors
+compiling os.c...
+os.c(116): warning:  #223-D: function "Output_Init" declared implicitly
+                Output_Init();
+os.c(313): warning:  #177-D: variable "sr" was declared but never referenced
+      char output; int sr;
+os.c(354): warning:  #177-D: variable "sr" was declared but never referenced
+        int ret; int sr;
+os.c(467): warning:  #177-D: variable "sr" was declared but never referenced
+    int sr;  
+os.c(482): warning:  #177-D: variable "sr" was declared but never referenced
+        int sr;
+os.c: 5 warnings, 0 errors
+compiling ST7735.c...
+ST7735.c(1308): error:  #20: identifier "LCDLock" is undefined
+  OS_bWait(&LCDLock);
+ST7735.c(1310): error:  #167: argument of type "char *" is incompatible with parameter of type "unsigned short"
+        ST7735_OutString(ptr);
+ST7735.c(1310): error:  #165: too few arguments in function call
+        ST7735_OutString(ptr);
+ST7735.c: 0 warnings, 3 errors
+".\UARTInts.axf" - 3 Error(s), 7 Warning(s).
+Target not created
+7735_OutString(ptr);
+ST7735.c: 1 warning, 3 errors
+".\UARTInts.axf" - 3 Error(s), 8 Warning(s).
+Target not created
+
+        int ret; int sr;
+os.c(467): warning:  #177-D: variable "sr" was declared but never referenced
+    int sr;  
+os.c(482): warning:  #177-D: variable "sr" was declared but never referenced
+        int sr;
+os.c: 5 warnings, 0 errors
+compiling ST7735.c...
+ST7735.c(1305): error:  #20: identifier "LCDLock" is undefined
+  OS_bWait(&LCDLock);
+ST7735.c(1306): warning:  #223-D: function "ST7735_SetCursor" declared implicitly
+    ST7735_SetCursor(0, lineStart);
+ST7735.c(1307): error:  #167: argument of type "char *" is incompatible with parameter of type "unsigned short"
+        ST7735_OutString(ptr);
+ST7735.c(1307): error:  #165: too few arguments in function call
+        ST7735_OutString(ptr);
+ST7735.c: 1 warning, 3 errors
+".\UARTInts.axf" - 3 Error(s), 14 Warning(s).
+Target not created
+e(uint16_t device, uint16_t line);
+ST7735.c(1305): error:  #20: identifier "LCDLock" is undefined
+  OS_bWait(&LCDLock);
+ST7735.c(1306): warning:  #223-D: function "ST7735_SetCursor" declared implicitly
+    ST7735_SetCursor(0, lineStart);
+ST7735.c(1307): error:  #167: argument of type "char *" is incompatible with parameter of type "unsigned short"
+        ST7735_OutString(ptr);
+ST7735.c(1307): error:  #165: too few arguments in function call
+        ST7735_OutString(ptr);
+ST7735.c: 1 warning, 9 errors
+".\UARTInts.axf" - 11 Error(s), 8 Warning(s).
+Target not created
+pe "unsigned short"
+        ST7735_OutString(ptr);
+ST7735.c(1307): error:  #165: too few arguments in function call
+        ST7735_OutString(ptr);
+ST7735.c: 2 warnings, 9 errors
+".\UARTInts.axf" - 11 Error(s), 11 Warning(s).
+Target not created
+tCursor" declared implicitly
+    ST7735_SetCursor(0, lineStart);
+ST7735.c(1308): error:  #167: argument of type "char *" is incompatible with parameter of type "unsigned short"
+        ST7735_OutString(ptr);
+ST7735.c(1308): error:  #165: too few arguments in function call
+        ST7735_OutString(ptr);
+ST7735.c: 4 warnings, 9 errors
+".\UARTInts.axf" - 11 Error(s), 13 Warning(s).
+Target not created
+#define GPIO_PORTA_PCTL_R       (*((volatile unsigned long *)0x4000452C))
+ST7735.c(72): warning:  #47-D: incompatible redefinition of macro "SSI0_CR0_R" (declared at line 285 of "tm4c123gh6pm.h")
+  #define SSI0_CR0_R              (*((volatile unsigned long *)0x40008000))
+ST7735.c(73): warning:  #47-D: incompatible redefinition of macro "SSI0_CR1_R" (declared at line 286 of "tm4c123gh6pm.h")
+  #define SSI0_CR1_R              (*((volatile unsigned long *)0x40008004))
+ST7735.c(74): warning:  #47-D: incompatible redefinition of macro "SSI0_DR_R" (declared at line 287 of "tm4c123gh6pm.h")
+  #define SSI0_DR_R               (*((volatile unsigned long *)0x40008008))
+ST7735.c(75): warning:  #47-D: incompatible redefinition of macro "SSI0_SR_R" (declared at line 288 of "tm4c123gh6pm.h")
+  #define SSI0_SR_R               (*((volatile unsigned long *)0x4000800C))
+ST7735.c(76): warning:  #47-D: incompatible redefinition of macro "SSI0_CPSR_R" (declared at line 289 of "tm4c123gh6pm.h")
+  #define SSI0_CPSR_R             (*((volatile unsigned long *)0x40008010))
+ST7735.c(77): warning:  #47-D: incompatible redefinition of macro "SSI0_CC_R" (declared at line 295 of "tm4c123gh6pm.h")
+  #define SSI0_CC_R               (*((volatile unsigned long *)0x40008FC8))
+ST7735.c(95): warning:  #47-D: incompatible redefinition of macro "SYSCTL_RCGC1_R" (declared at line 2058 of "tm4c123gh6pm.h")
+  #define SYSCTL_RCGC1_R          (*((volatile unsigned long *)0x400FE104))
+ST7735.c(96): warning:  #47-D: incompatible redefinition of macro "SYSCTL_RCGC2_R" (declared at line 2059 of "tm4c123gh6pm.h")
+  #define SYSCTL_RCGC2_R          (*((volatile unsigned long *)0x400FE108))
+ST7735.c(1316): error:  #20: identifier "LCDLock" is undefined
+  OS_bWait(&LCDLock);
+ST7735.c(1317): warning:  #223-D: function "ST7735_SetCursor" declared implicitly
+    ST7735_SetCursor(0, lineStart);
+ST7735.c(1318): error:  #167: argument of type "char *" is incompatible with parameter of type "unsigned short"
+        ST7735_OutString(ptr);
+ST7735.c(1318): error:  #165: too few arguments in function call
+        ST7735_OutString(ptr);
+ST7735.c: 15 warnings, 9 errors
+".\UARTInts.axf" - 11 Error(s), 24 Warning(s).
+Target not created
+c(1318): error:  #165: too few arguments in function call
+        ST7735_OutString(ptr);
+ST7735.c: 15 warnings, 9 errors
+compiling Switch.c...
+Switch.c(83): warning:  #550-D: variable "delay" was set but never used
+        int delay;
+Switch.c: 1 warning, 0 errors
+compiling SysTickInts.c...
+compiling Timer1A.c...
+Timer1A.c(42): warning:  #550-D: variable "delay" was set but never used
+  void Timer1A_Init(uint32_t period){ int delay;
+Timer1A.c: 1 warning, 0 errors
+compiling Timer3A.c...
+compiling UART.c...
+UART.c(165): warning:  #177-D: variable "sr" was declared but never referenced
+        int sr;
+UART.c: 1 warning, 0 errors
+assembling cr4_fft_64_stm32.s...
+assembling osasm.s...
+assembling PID_stm32.s...
+assembling startup.s...
+".\UARTInts.axf" - 11 Error(s), 28 Warning(s).
+Target not created
